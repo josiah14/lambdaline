@@ -1,3 +1,8 @@
+import System.Directory
+import Data.Text as T
+import Git
+
 main :: IO ()
-main = print "hello world"
+main = do
+    getCurrentDirectory >>= print
 
