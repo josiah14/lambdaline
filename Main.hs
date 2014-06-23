@@ -21,6 +21,10 @@ parseProcessResponse :: ProcessResponse -> IO (Maybe String)
 parseProcessResponse processResponse = do
     (exitCode,stdOut,stdErr) <- processResponse
     case exitCode of ExitSuccess      -> return $ Just $ trim stdOut
-                     ExitFailure _    -> return Nothing
+                     ExitFailure 128  -> return Nothing
+                     ExitFailure _    -> do
+                       print exitCode
+                       print $ stdOut ++ stdErr
+                       return Nothing
                      where trim = unpack . strip . pack
 
