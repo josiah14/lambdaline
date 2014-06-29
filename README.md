@@ -1,4 +1,4 @@
-haskline
+Lambdaline
 ========
 
 Clone of Powerline in Haskell
