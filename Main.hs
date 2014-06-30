@@ -79,6 +79,7 @@ hasChangesToCommitButNotAdd = do
     maybeAdd     <- hasChangesToAdd
     return $ (&&) <$> maybeChanges <*> (not <$> maybeAdd)
 
+-- length is not enough to determine if add changes are equal to all changes
 hasChangesToAddButNotCommit :: IO (Maybe Bool)
 hasChangesToAddButNotCommit = do
     maybeHasChanges <- hasChanges
