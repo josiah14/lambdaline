@@ -22,8 +22,8 @@ data RepoStatus = NoChanges | ChangesToAdd | ChangesToCommit | ChangesToAddAndCo
 main :: IO ()
 main = do
     curDir <- getCurrentDirectory
-    L.foldr1 (addSegment) "" [getCurrentBranch,getCurrentRepoStatus] >>= print
-    where addSegment seg prompt =  liftM ((prompt ++) <$>) (liftM (show <$>) seg)
+    (L.foldr1 (addSegment) [] [getCurrentBranch,getCurrentRepoStatus]) >>= print
+    where addSegment seg prompt = liftM (fmap ((++) prompt)) (liftM (fmap $ L.concat . show) seg)
 
 
 getCurrentBranch :: BranchName
