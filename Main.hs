@@ -3,8 +3,8 @@ import System.Process
 import Data.Text as T
 import Control.Monad
 import System.Exit
-import Date.List
-import Data.List.Split
+import Data.List as L
+import Data.List.Split as SP
 import Control.Applicative
 
 type ProcessResponse = IO (ExitCode, String, String)
@@ -33,29 +33,39 @@ parseProcessResponse processResponse = do
                        return Nothing
                      where trim = unpack . strip . pack
 
-getCurrentRepoStatus :: IO (Maybe RepoStatus)
-getCurrentRepoStatus = parseProcessResponse $ readProcessWithExitCode
+-- getCurrentRepoStatus :: IO (Maybe RepoStatus)
+-- getCurrentRepoStatus = parseProcessResponse $ readProcessWithExitCode
+
+splitOnNewline :: String -> [String]
+splitOnNewline str = [ s | s <- SP.splitOn "\n" str, not . L.null $ s ]
 
 getChangesToAdd :: IO (Maybe [String])
-getChangesToAdd = liftM (fmap split "\n")  $ parseProcessResponse $ readProcessWithExitCode "git" ["add","--all","--dry-run"] []
+getChangesToAdd = liftM (fmap splitOnNewline) $ parseProcessResponse $ gitAddDryRun
+                where gitAddDryRun = readProcessWithExitCode "git" ["add","--all","--dry-run"] []
 
-getChangesToCommit :: IO (Maybe [String])
-getChangesToCommit = liftM (fmap split "\n") $ parseProcessResponse $ readProcessWithExitCode "git" ["status","--porcelain"]
+getAllChanges :: IO (Maybe [String])
+getAllChanges = liftM (fmap splitOnNewline) $ parseProcessResponse $ gitStatus
+                   where gitStatus = readProcessWithExitCode "git" ["status","--porcelain"] []
 
-stdOutListAny :: IO (Maybe [String]) -> IO (Maybe Boolean)
-stdOutListAny = liftM fmap not . null
+stdOutListAny :: IO (Maybe [String]) -> IO (Maybe Bool)
+stdOutListAny = liftM (fmap $ not . L.null)
 
-hasChangesToAdd :: IO (Maybe Boolean)
+hasChangesToAdd :: IO (Maybe Bool)
 hasChangesToAdd = stdOutListAny getChangesToAdd
 
-hasChangesToCommit :: IO (Maybe Boolean)
-hasChangesToCommit = ((&&) . <$> =<< (stdOutListAny getChangesToCommit)) =<< (not . <$> =<< hasChangesToAdd )
-hasChangesToCommit = do
-    changesToCommit <- getChangesToCommit
-    maybeAdd        <- hasChangesToAdd
-    return do
-      commitsList <- changesToCommit
-      addBool     <- maybeAdd
-      return commitsList && not addBool
+hasChanges :: IO (Maybe Bool)
+hasChanges = stdOutListAny getAllChanges
 
-hasAnyChanges :: IO (Maybe Boolean)
+hasChangesToCommitButNotAdd :: IO (Maybe Bool)
+hasChangesToCommitButNotAdd = do
+    maybeChanges <- hasChanges
+    maybeAdd     <- hasChangesToAdd
+    return $ (&&) <$> maybeChanges <*> (not <$> maybeAdd)
+
+hasChangesToAddButNotCommit :: IO (Maybe Bool)
+hasChangesToAddButNotCommit = do
+    maybeHasChanges <- hasChanges
+    maybeAdd        <- getChangesToAdd
+    maybeChanges    <- getAllChanges
+    return $ (&&) <$> maybeHasChanges <*> ((==) <$> (L.length <$> maybeChanges) <*> (L.length <$> maybeAdd))
+
