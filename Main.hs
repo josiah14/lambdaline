@@ -16,14 +16,14 @@ data RepoStatus = NoChanges | ChangesToAdd | ChangesToCommit | ChangesToAddAndCo
 main :: IO ()
 main =
   liftM fromJust (L.foldr1
-                    (addSegment)
+                    addSegment
                     [
                       getCurrentBranch,
-                      liftM (fmap show) $ getCurrentRepoStatus,
+                      liftM (fmap show) getCurrentRepoStatus,
                       liftM Just getCurrentDirectory
                     ]
                   ) >>= print
-  where addSegment seg prompt = (liftM2 $ liftA2 (++)) seg prompt
+  where addSegment = liftM2 $ liftA2 (++)
 
 getCurrentBranch :: BranchName
 getCurrentBranch = parseProcessResponse $ readProcessWithExitCode "git" ["rev-parse","--abbrev-ref","HEAD"] []
@@ -56,11 +56,11 @@ splitOnNewline :: String -> [String]
 splitOnNewline str = [ s | s <- SP.splitOn "\n" str, not . L.null $ s ]
 
 getChangesToAdd :: IO (Maybe [String])
-getChangesToAdd = liftM (fmap splitOnNewline) $ parseProcessResponse $ gitAddDryRun
+getChangesToAdd = liftM (fmap splitOnNewline) $ parseProcessResponse gitAddDryRun
   where gitAddDryRun = readProcessWithExitCode "git" ["add","--all","--dry-run"] []
 
 getAllChanges :: IO (Maybe [String])
-getAllChanges = liftM (fmap splitOnNewline) $ parseProcessResponse $ gitStatus
+getAllChanges = liftM (fmap splitOnNewline) $ parseProcessResponse gitStatus
   where gitStatus = readProcessWithExitCode "git" ["status","--porcelain"] []
 
 stdOutListAny :: IO (Maybe [String]) -> IO (Maybe Bool)
