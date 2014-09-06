@@ -94,3 +94,4 @@ hasChangesToAddAndCommit = do
   return $ (&&) <$> maybeHasChanges <*> ((&&) <$> (not <$> maybeCommitNotAdd) <*> (not <$> maybeAddNotCommit))
 
 
+
