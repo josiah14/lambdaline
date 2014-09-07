@@ -9,7 +9,7 @@ import Control.Applicative
 import Data.Maybe
 
 type ProcessResponse = IO (ExitCode, String, String)
-type BranchName = IO (Maybe String)
+type BranchName = String
 
 data RepoStatus = RepoStatus { unstagedChages :: Bool
                              , stagedChanges :: Bool
@@ -27,7 +27,7 @@ main =
   ) >>= print
   where addSegment = liftM2 (++)
 
-getCurrentBranch :: BranchName
+getCurrentBranch :: IO (Maybe BranchName)
 getCurrentBranch = parseProcessResponse $ readProcessWithExitCode "git" ["rev-parse","--abbrev-ref","HEAD"] []
 
 parseProcessResponse :: ProcessResponse -> IO (Maybe String)
