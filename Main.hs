@@ -21,7 +21,7 @@ main =
   (L.foldr1
      addSegment
      [ liftM (fromMaybe "") getCurrentBranch
-     , liftM show getCurrentRepoStatus
+     , liftM (\status -> if isNothing status then "" else show $ fromJust status) getCurrentRepoStatus
      , getCurrentDirectory
      ]
   ) >>= print
@@ -40,12 +40,14 @@ parseProcessResponse processResponse = do
                      print $ stdOut ++ " " ++ stdErr
                      return Nothing
 
-getCurrentRepoStatus :: IO (RepoStatus)
+getCurrentRepoStatus :: IO (Maybe RepoStatus)
 getCurrentRepoStatus = do
+  branch   <- getCurrentBranch
   unstaged <- hasUnstagedChanges
   staged   <- hasStagedChanges
   unpushed <- hasCommitsToPush
-  return $ RepoStatus (fromMaybe False unstaged) (fromMaybe False staged) (fromMaybe False unpushed)
+  return $ if isNothing branch then Nothing
+           else Just $ RepoStatus (fromMaybe False unstaged) (fromMaybe False staged) (fromMaybe False unpushed)
 
 
 splitOnNewLine :: String -> [String]
