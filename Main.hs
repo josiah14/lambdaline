@@ -11,19 +11,21 @@ import Data.Maybe
 type ProcessResponse = IO (ExitCode, String, String)
 type BranchName = IO (Maybe String)
 
-data RepoStatus = NoChanges | ChangesToAdd | ChangesToCommit | ChangesToAddAndCommit deriving Show
+data RepoStatus = RepoStatus { unstagedChages :: Bool
+                             , stagedChanges :: Bool
+                             , commitsToPush :: Bool
+                             } deriving Show
 
 main :: IO ()
 main =
-  liftM fromJust (L.foldr1
-                    addSegment
-                    [
-                      getCurrentBranch,
-                      liftM (fmap show) getCurrentRepoStatus,
-                      liftM Just getCurrentDirectory
-                    ]
-                  ) >>= print
-  where addSegment = liftM2 $ liftA2 (++)
+  (L.foldr1
+     addSegment
+     [ liftM (fromMaybe "") getCurrentBranch
+     , liftM show getCurrentRepoStatus
+     , getCurrentDirectory
+     ]
+  ) >>= print
+  where addSegment = liftM2 (++)
 
 getCurrentBranch :: BranchName
 getCurrentBranch = parseProcessResponse $ readProcessWithExitCode "git" ["rev-parse","--abbrev-ref","HEAD"] []
@@ -31,67 +33,51 @@ getCurrentBranch = parseProcessResponse $ readProcessWithExitCode "git" ["rev-pa
 parseProcessResponse :: ProcessResponse -> IO (Maybe String)
 parseProcessResponse processResponse = do
   (exitCode,stdOut,stdErr) <- processResponse
-  case exitCode of ExitSuccess      -> return $ Just $ trim stdOut
+  case exitCode of ExitSuccess      -> return $ Just $ trimString stdOut
                    ExitFailure 128  -> return Nothing
                    ExitFailure _    -> do
                      print exitCode
                      print $ stdOut ++ " " ++ stdErr
                      return Nothing
-  where trim = unpack . strip . pack
 
-getCurrentRepoStatus :: IO (Maybe RepoStatus)
+getCurrentRepoStatus :: IO (RepoStatus)
 getCurrentRepoStatus = do
-  maybeChanges      <- hasChanges
-  maybeCommitAndAdd <- hasChangesToAddAndCommit
-  maybeAddOnly      <- hasChangesToCommitButNotAdd
-  maybeCommitOnly   <- hasChangesToAddButNotCommit
-  case (maybeChanges, maybeCommitAndAdd, maybeAddOnly, maybeCommitOnly) of
-    (Just False,_,_,_) -> return $ Just NoChanges
-    (_,_,Just True,_)  -> return $ Just ChangesToAdd
-    (_,_,_,Just True)  -> return $ Just ChangesToCommit
-    (_,Just True,_,_)  -> return $ Just ChangesToAddAndCommit
-    _                  -> return Nothing
+  unstaged <- hasUnstagedChanges
+  staged   <- hasStagedChanges
+  unpushed <- hasCommitsToPush
+  return $ RepoStatus (fromMaybe False unstaged) (fromMaybe False staged) (fromMaybe False unpushed)
 
-splitOnNewline :: String -> [String]
-splitOnNewline str = [ s | s <- SP.splitOn "\n" str, not . L.null $ s ]
 
-getChangesToAdd :: IO (Maybe [String])
-getChangesToAdd = liftM (fmap splitOnNewline) $ parseProcessResponse gitAddDryRun
-  where gitAddDryRun = readProcessWithExitCode "git" ["add","--all","--dry-run"] []
+splitOnNewLine :: String -> [String]
+splitOnNewLine str = [ s | s <- SP.splitOn "\n" str, not . L.null $ s ]
 
-getAllChanges :: IO (Maybe [String])
-getAllChanges = liftM (fmap splitOnNewline) $ parseProcessResponse gitStatus
-  where gitStatus = readProcessWithExitCode "git" ["status","--porcelain"] []
+hasStagedChanges:: IO (Maybe Bool)
+hasStagedChanges = liftM (fmap isResponseNull) $ parseProcessResponse gitResponse
+  where gitResponse = readProcessWithExitCode "git" ["diff-index","--cached","--ignore-submodules","HEAD"] []
+
+hasUnstagedChanges :: IO (Maybe Bool)
+hasUnstagedChanges = liftM (fmap isResponseNull) $ parseProcessResponse gitStatus
+  where gitStatus = readProcessWithExitCode "git" ["diff-files","--ignore-submodules"] []
+
+hasCommitsToPush :: IO (Maybe Bool)
+hasCommitsToPush = do
+  latestCommits <- liftM (fmap $ deleteNulls . splitOnNewLine) $ parseProcessResponse gitRemoteRefDiff
+  case latestCommits
+    of Nothing                                       -> return Nothing
+       Just []                                       -> return $ Just False
+       Just [_]                                      -> return $ Just True -- This case is for a new repository with the first commit in local but not yet pushed.
+       Just [ latestRemoteCommit, latestLocalCommit] -> return $ Just $ latestRemoteCommit /= latestLocalCommit
+  where gitRemoteRefDiff = readProcessWithExitCode "git" ["rev-parse", "@{u}", "HEAD"] []
 
 stdOutListAny :: IO (Maybe [String]) -> IO (Maybe Bool)
 stdOutListAny = liftM (fmap $ not . L.null)
 
-hasChangesToAdd :: IO (Maybe Bool)
-hasChangesToAdd = stdOutListAny getChangesToAdd
+deleteNulls :: [[a]] -> [[a]]
+deleteNulls = L.filter $ not . L.null
 
-hasChanges :: IO (Maybe Bool)
-hasChanges = stdOutListAny getAllChanges
+trimString :: String -> String
+trimString = unpack . strip . pack
 
-hasChangesToCommitButNotAdd :: IO (Maybe Bool)
-hasChangesToCommitButNotAdd = do
-  maybeChanges <- hasChanges
-  maybeAdd     <- hasChangesToAdd
-  return $ (&&) <$> maybeChanges <*> (not <$> maybeAdd)
-
--- length is not enough to determine if add changes are equal to all changes
-hasChangesToAddButNotCommit :: IO (Maybe Bool)
-hasChangesToAddButNotCommit = do
-  maybeHasChanges <- hasChanges
-  maybeAdd        <- getChangesToAdd
-  maybeChanges    <- getAllChanges
-  return $ (&&) <$> maybeHasChanges <*> ((==) <$> (L.length <$> maybeChanges) <*> (L.length <$> maybeAdd))
-
-hasChangesToAddAndCommit :: IO (Maybe Bool)
-hasChangesToAddAndCommit = do
-  maybeHasChanges   <- hasChanges
-  maybeCommitNotAdd <- hasChangesToCommitButNotAdd
-  maybeAddNotCommit <- hasChangesToAddButNotCommit
-  return $ (&&) <$> maybeHasChanges <*> ((&&) <$> (not <$> maybeCommitNotAdd) <*> (not <$> maybeAddNotCommit))
-
-
+isResponseNull :: String -> Bool
+isResponseNull = not . L.null . splitOnNewLine . trimString
 

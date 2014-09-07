@@ -1,0 +1,15 @@
+1. git add --all --dry-run
+    - this returns something if there are changes that need to be added, but if there are only chages that need to be committed.
+2. git status --porcelain
+    - this will return something if there are any changes, added or not, that need to be committed.
+3. git rev-parse @{u} HEAD
+    - will return first the latest remote commit and then the latest local commit.
+4. git diff-files --ignore-submodules
+    - this returns something if there are unstaged changes
+5. git diff-index --cached --ignore-submodules HEAD
+    - this returns something if there are staged uncommitted changes
+6. git symbolic-ref HEAD returns the current branch
+
+
+- git rev-parse --is-inside-work-tree
+    - returns true when in git repository
