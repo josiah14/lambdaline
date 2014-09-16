@@ -1,5 +1,6 @@
 import System.Directory
 import System.Process
+import System.Environment
 import Data.Text as T
 import Control.Monad
 import System.Exit
@@ -7,29 +8,44 @@ import Data.List as L
 import Data.List.Split as SP
 import Data.Maybe
 import System.Console.Terminal.Size as TS
+import Control.Applicative
 
 type ProcessResponse = IO (ExitCode, String, String)
 type BranchName = String
 type Segment = IO String
 
-data RepoStatus = RepoStatus { unstagedChages :: Bool
+data RepoStatus = RepoStatus { unstagedChanges :: Bool
                              , stagedChanges :: Bool
                              , commitsToPush :: Bool
                              } deriving Show
 
-terminalWidth :: IO String
-terminalWidth = liftM (show . width . fromJust) TS.size
+getTerminalWidth :: IO (String)
+getTerminalWidth = liftM L.head getArgs
+
+gitRepositorySymbol :: String -> IO String
+gitRepositorySymbol symbol = inGitRepository >>= (\git -> if git == True then return symbol else return "")
 
 main :: IO ()
 main =
   (L.foldr1
      addSegment
-     [ liftM (fromMaybe "") getCurrentBranch
-     , liftM (\status -> if isNothing status then "" else show $ fromJust status) getCurrentRepoStatus
+     [ gitRepositorySymbol "±"
+     , liftM (fromMaybe "") getCurrentBranch
+     , gitStatusSymbols "✚" "✎" "↑"
      , getCurrentDirectory
+     , getTerminalWidth
      ]
-  ) >>= print
-  where addSegment = liftM2 (++)
+  ) >>= putStr >> putStr " "
+  where addSegment = liftM2 ((++) . (++ " "))
+
+gitStatusSymbols :: String -> String -> String -> IO String
+gitStatusSymbols unstagedSym stagedSym committedSym = do
+  maybeStatus <- getCurrentRepoStatus
+  case maybeStatus of Just status -> return $ unstagedStr ++ stagedStr ++ committedStr
+                                       where unstagedStr  = if unstagedChanges status then unstagedSym  else ""
+                                             stagedStr    = if stagedChanges status   then stagedSym    else ""
+                                             committedStr = if commitsToPush status   then committedSym else ""
+                      Nothing     -> return ""
 
 getCurrentBranch :: IO (Maybe BranchName)
 getCurrentBranch = parseProcessResponse $ readProcessWithExitCode "git" ["rev-parse","--abbrev-ref","HEAD"] []
