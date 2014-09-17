@@ -29,18 +29,20 @@ main :: IO ()
 main =
   (L.foldr1
      addSegment
-     [ gitRepositorySymbol "±"
-     , getCurrentBranch
-     , gitStatusSymbols "✚" "✎" "↑"
+     [ (liftM (\x -> Just $ (fromMaybe "" x) ++ " ") $ gitStatusSymbols "✚" "✎" "↑") `fuse` getCurrentBranch `fuse` gitRepositorySymbol "±"
      , liftM Just getCurrentDirectory
      ]
-  ) >>= putStr . (fromMaybe "") >> putStr " "
+  ) >>= putStr . (fromMaybe "") >> putStr " λ "
   where addSegment additionalSegment partialPrompt = do
           seg <- additionalSegment
           prompt <- partialPrompt
           case seg of Nothing  -> return $ prompt
                       Just ""  -> return $ prompt
-                      Just seg -> return $ Just $ (fromMaybe "" prompt) ++ " " ++ seg
+                      Just seg -> return $ Just $ (fromMaybe "" prompt) ++ " ➢ " ++ seg
+        seg0 `fuse` seg1 = do
+          mSeg0 <- seg0
+          mSeg1 <- seg1
+          return $ Just $ (fromMaybe "" mSeg0) ++ (fromMaybe "" mSeg1)
 
 gitStatusSymbols :: String -> String -> String -> IO (Maybe String)
 gitStatusSymbols unstagedSym stagedSym committedSym = do
