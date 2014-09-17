@@ -22,30 +22,33 @@ data RepoStatus = RepoStatus { unstagedChanges :: Bool
 getTerminalWidth :: IO (String)
 getTerminalWidth = liftM L.head getArgs
 
-gitRepositorySymbol :: String -> IO String
-gitRepositorySymbol symbol = inGitRepository >>= (\git -> if git == True then return symbol else return "")
+gitRepositorySymbol :: String -> IO (Maybe String)
+gitRepositorySymbol symbol = inGitRepository >>= (\git -> if git == True then return $ Just symbol else return Nothing)
 
 main :: IO ()
 main =
   (L.foldr1
      addSegment
      [ gitRepositorySymbol "±"
-     , liftM (fromMaybe "") getCurrentBranch
+     , getCurrentBranch
      , gitStatusSymbols "✚" "✎" "↑"
-     , getCurrentDirectory
-     , getTerminalWidth
+     , liftM Just getCurrentDirectory
      ]
-  ) >>= putStr >> putStr " "
-  where addSegment = liftM2 ((++) . (++ " "))
+  ) >>= putStr . (fromMaybe "") >> putStr " "
+  where addSegment additionalSegment partialPrompt = do
+          seg <- additionalSegment
+          prompt <- partialPrompt
+          case seg of Nothing  -> return $ prompt
+                      Just seg -> return $ Just $ (fromMaybe "" prompt) ++ " " ++ seg
 
-gitStatusSymbols :: String -> String -> String -> IO String
+gitStatusSymbols :: String -> String -> String -> IO (Maybe String)
 gitStatusSymbols unstagedSym stagedSym committedSym = do
   maybeStatus <- getCurrentRepoStatus
-  case maybeStatus of Just status -> return $ unstagedStr ++ stagedStr ++ committedStr
+  case maybeStatus of Just status -> return $ Just $ unstagedStr ++ stagedStr ++ committedStr
                                        where unstagedStr  = if unstagedChanges status then unstagedSym  else ""
                                              stagedStr    = if stagedChanges status   then stagedSym    else ""
                                              committedStr = if commitsToPush status   then committedSym else ""
-                      Nothing     -> return ""
+                      Nothing     -> return Nothing
 
 getCurrentBranch :: IO (Maybe BranchName)
 getCurrentBranch = parseProcessResponse $ readProcessWithExitCode "git" ["rev-parse","--abbrev-ref","HEAD"] []
