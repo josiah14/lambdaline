@@ -39,6 +39,7 @@ main =
           seg <- additionalSegment
           prompt <- partialPrompt
           case seg of Nothing  -> return $ prompt
+                      Just ""  -> return $ prompt
                       Just seg -> return $ Just $ (fromMaybe "" prompt) ++ " " ++ seg
 
 gitStatusSymbols :: String -> String -> String -> IO (Maybe String)
