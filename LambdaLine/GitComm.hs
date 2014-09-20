@@ -9,6 +9,7 @@ module LambdaLine.GitComm
 ) where
 -- internal imports
 import LambdaLine.Util
+import LambdaLine.Segment (PromptSegment)
 -- external lib imports
 import Control.Monad
 import Data.Maybe
@@ -27,13 +28,12 @@ gitStagedSymbol :: String -> PromptSegment
 gitStagedSymbol symbol = hasStagedChanges >>= calculateStatusSymbol symbol
 
 gitStatusSymbols :: String -> String -> String -> PromptSegment
-gitStatusSymbols unstagedSym stagedSym committedSym = do
-  maybeStatus <- getCurrentRepoStatus
-  case maybeStatus of Just status -> return $ Just $ unstagedStr ++ stagedStr ++ committedStr
-                                       where unstagedStr  = if unstagedChanges status then unstagedSym  else ""
-                                             stagedStr    = if stagedChanges status   then stagedSym    else ""
-                                             committedStr = if commitsToPush status   then committedSym else ""
-                      Nothing     -> return Nothing
+gitStatusSymbols unstagedSym stagedSym committedSym = getCurrentRepoStatus >>= (\mStatus ->
+  case mStatus of Just status -> return $ Just $ unstagedStr ++ stagedStr ++ committedStr
+                                   where unstagedStr  = if unstagedChanges status then unstagedSym  else ""
+                                         stagedStr    = if stagedChanges status   then stagedSym    else ""
+                                         committedStr = if commitsToPush status   then committedSym else ""
+                  Nothing     -> return Nothing)
 
 gitUnstagedSymbol :: String -> PromptSegment
 gitUnstagedSymbol symbol =  hasUnstagedChanges >>= calculateStatusSymbol symbol

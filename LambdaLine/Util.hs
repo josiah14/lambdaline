@@ -1,6 +1,5 @@
 module LambdaLine.Util
 ( ProcessResponse
-, PromptSegment
 , deleteNulls
 , isResponseNull
 , parseProcessResponse
@@ -16,7 +15,6 @@ import Data.Text as T
 import System.Exit
 
 type ProcessResponse = IO (ExitCode, String, String)
-type PromptSegment = IO (Maybe String)
 
 deleteNulls :: [[a]] -> [[a]]
 deleteNulls = L.filter $ not . L.null
@@ -26,13 +24,9 @@ isResponseNull = not . L.null . splitOnNewLine . trimString
 
 parseProcessResponse :: ProcessResponse -> IO (Maybe String)
 parseProcessResponse processResponse = do
-  (exitCode,stdOut,stdErr) <- processResponse
-  case exitCode of ExitSuccess      -> return $ Just $ trimString stdOut
-                   ExitFailure 128  -> return Nothing
-                   ExitFailure _    -> do
-                     print exitCode
-                     print $ stdOut ++ " " ++ stdErr
-                     return Nothing
+  (exitCode,stdOut,_) <- processResponse
+  case exitCode of ExitSuccess    -> return $ Just $ trimString stdOut
+                   ExitFailure _  -> return Nothing
 
 splitOnNewLine :: String -> [String]
 splitOnNewLine str = [ s | s <- SP.splitOn "\n" str, not . L.null $ s ]
