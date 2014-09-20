@@ -29,11 +29,11 @@ gitStagedSymbol symbol = hasStagedChanges >>= calculateStatusSymbol symbol
 
 gitStatusSymbols :: String -> String -> String -> PromptSegment
 gitStatusSymbols unstagedSym stagedSym committedSym = getCurrentRepoStatus >>= (\mStatus ->
-  case mStatus of Just status -> return $ Just $ unstagedStr ++ stagedStr ++ committedStr
+  case mStatus of Nothing     -> return Nothing
+                  Just status -> return $ Just $ unstagedStr ++ stagedStr ++ committedStr
                                    where unstagedStr  = if unstagedChanges status then unstagedSym  else ""
                                          stagedStr    = if stagedChanges status   then stagedSym    else ""
-                                         committedStr = if commitsToPush status   then committedSym else ""
-                  Nothing     -> return Nothing)
+                                         committedStr = if commitsToPush status   then committedSym else "")
 
 gitUnstagedSymbol :: String -> PromptSegment
 gitUnstagedSymbol symbol =  hasUnstagedChanges >>= calculateStatusSymbol symbol
@@ -52,7 +52,6 @@ calculateStatusSymbol :: String -> Maybe Bool -> IO (Maybe String)
 calculateStatusSymbol symbol mUnstaged = inGitRepository >>= (\inGitRepo -> if inGitRepo && fromMaybe False mUnstaged
                                                                               then return $ Just symbol
                                                                               else return Nothing)
-
 
 getCurrentRepoStatus :: IO (Maybe RepoStatus)
 getCurrentRepoStatus = do

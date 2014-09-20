@@ -2,8 +2,6 @@ import System.Directory
 import System.Environment
 import Control.Monad
 import Data.List as L
-import Data.Maybe
--- import LambdaLine.Util
 import LambdaLine.GitComm
 import LambdaLine.Segment
 
