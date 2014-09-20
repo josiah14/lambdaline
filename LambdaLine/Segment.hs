@@ -35,6 +35,7 @@ font = undefined
 
 space :: Maybe String -> PromptSegment
 space mSeg = return $ case mSeg of Just seg@(_:_) -> Just $ seg ++ " "
+                                   Just ""        -> mSeg
                                    _              -> Nothing
 
 style = undefined

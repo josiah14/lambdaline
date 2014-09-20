@@ -1,37 +1,6 @@
->+<	./Main.hs	34
-LambdaLine.GitComm	./LambdaLine/GitComm.hs	1
-LambdaLine.Segment	./LambdaLine/Segment.hs	1
-LambdaLine.Util	./LambdaLine/Util.hs	1
-ProcessResponse	./LambdaLine/Util.hs	18
-PromptSegment	./LambdaLine/Util.hs	19
-RepoStatus	./LambdaLine/GitComm.hs	46
-buildMainPrompt	./Main.hs	20
-calculateStatusSymbol	./LambdaLine/GitComm.hs	51
-color	./LambdaLine/Segment.hs	10
-commitsToPush	./LambdaLine/GitComm.hs	48
-deleteNulls	./LambdaLine/Util.hs	21
-font	./LambdaLine/Segment.hs	12
-getCurrentRepoStatus	./LambdaLine/GitComm.hs	57
-getTerminalWidth	./Main.hs	10
-gitCurrentBranch	./LambdaLine/GitComm.hs	17
-gitPushSymbol	./LambdaLine/GitComm.hs	20
-gitRepositorySymbol	./LambdaLine/GitComm.hs	23
-gitStagedSymbol	./LambdaLine/GitComm.hs	26
-gitStatusSymbols	./LambdaLine/GitComm.hs	29
-gitUnstagedSymbol	./LambdaLine/GitComm.hs	38
-hasCommitsToPush	./LambdaLine/GitComm.hs	67
-hasStagedChanges	./LambdaLine/GitComm.hs	78
-hasUnstagedChanges	./LambdaLine/GitComm.hs	82
-inGitRepository	./LambdaLine/GitComm.hs	41
-isResponseNull	./LambdaLine/Util.hs	24
-main	./Main.hs	13
-parseProcessResponse	./LambdaLine/Util.hs	27
-seg0	./Main.hs	35
-space	./LambdaLine/Segment.hs	14
-splitOnNewLine	./LambdaLine/Util.hs	37
-stagedChanges	./LambdaLine/GitComm.hs	47
-stdOutListAny	./LambdaLine/Util.hs	40
-style	./LambdaLine/Segment.hs	19
-symbol	./LambdaLine/Segment.hs	21
-trimString	./LambdaLine/Util.hs	43
-unstagedChanges	./LambdaLine/GitComm.hs	46
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.9~svn20110310	//
