@@ -22,7 +22,8 @@ red = show 009
 
 -- Combines 2 segments into a single segment
 (>+<) :: PromptSegment -> PromptSegment -> PromptSegment
-(>+<) = liftM2 $ \segment0 segment1 -> (++) <$> segment0 <*> segment1
+(>+<) = liftM2 $ \segment0 segment1 -> case catMaybes [segment0, segment1] of []       -> Nothing
+                                                                              segments -> Just $ foldl1 (++) segments
 
 buildMainPrompt :: [PromptSegment] -> String -> IO ()
 buildMainPrompt segments promptSymbol =
