@@ -4,6 +4,7 @@ module LambdaLine.Segment
 , buildMainPrompt
 , color
 , font
+, red
 , space
 , style
 , symbol
@@ -13,6 +14,10 @@ import Data.Maybe
 import Data.List as L
 
 type PromptSegment = IO (Maybe String)
+type Color = String
+
+red :: Color
+red = show 009
 
 -- Combines 2 segments into a single segment
 (>+<) :: PromptSegment -> PromptSegment -> PromptSegment
@@ -28,7 +33,11 @@ buildMainPrompt segments promptSymbol =
           where concatSeg prompt mSeg = case mSeg of Just seg@(_:_) -> Just $ (fromMaybe "" prompt) ++ "➢ " ++ seg
                                                      _              -> prompt
 
-color = undefined
+-- edit/define the color of a segment
+color :: Color -> Maybe String -> PromptSegment
+color color seg = return $ case seg of Just ""     -> seg
+                                       Just prompt -> Just $ "%F{" ++ color ++ "}" ++ prompt ++ "%f"
+                                       _           -> Nothing
 
 font = undefined
 
