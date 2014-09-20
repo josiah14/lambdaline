@@ -17,7 +17,8 @@ type PromptSegment = IO (Maybe String)
 
 -- Combines 2 segments into a single segment
 (>+<) :: PromptSegment -> PromptSegment -> PromptSegment
-(>+<) = liftM2 $ \segment0 segment1 -> (++) <$> segment0 <*> segment1
+(>+<) = liftM2 $ \segment0 segment1 -> Just $ foldl1 (++) $ catMaybes [segment0, segment1]
+-- (>+<) = liftM2 $ \segment0 segment1 -> (++) <$> segment0 <*> segment1
 
 buildMainPrompt :: [PromptSegment] -> String -> IO ()
 buildMainPrompt segments promptSymbol =
