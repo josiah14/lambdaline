@@ -2,8 +2,10 @@ module LambdaLine.Segment
 ( PromptSegment
 , (>+<)
 , buildMainPrompt
-, color
+, fgColor
 , font
+, promptSymbol
+, separator
 , space
 , style
 , symbol
@@ -20,23 +22,31 @@ type PromptSegment = IO (Maybe String)
 (>+<) = liftM2 $ \segment0 segment1 -> case catMaybes [segment0, segment1] of []       -> Nothing
                                                                               segments -> Just $ foldl1 (++) segments
 
-buildMainPrompt :: [PromptSegment] -> String -> String -> IO ()
+buildMainPrompt :: [PromptSegment] -> PromptSegment -> PromptSegment -> IO ()
 buildMainPrompt segments separator promptSymbol =
   (L.foldl1
      addSegment
      segments
-  ) >>= putStr . (fromMaybe "") >> putStr promptSymbol
-  where addSegment = liftM2 concatSeg
-          where concatSeg prompt mSeg = case mSeg of Just seg@(_:_) -> Just $ (fromMaybe "" prompt) ++ separator ++ seg
-                                                     _              -> prompt
+  ) >>= putStr . (fromMaybe "") >> promptSymbol >>= putStr . (fromMaybe "" )
+  where addSegment = 
+          liftM3 concatSeg separator
+                where concatSeg separator prompt mSeg =
+                        case mSeg of Just seg@(_:_) -> Just $ (fromMaybe "" prompt) ++ (fromMaybe "" separator) ++ seg
+                                     _              -> prompt
 
--- edit/define the color of a segment
-color :: Color -> Maybe String -> PromptSegment
-color xtermNum seg = return $ case seg of Just ""     -> seg
-                                          Just prompt -> Just $ "%F{" ++ xtermNum ++ "}" ++ prompt ++ "%f"
-                                          _           -> Nothing
+-- edit/define the foreground/font color of a segment
+fgColor :: Color -> Maybe String -> PromptSegment
+fgColor color seg = return $ case seg of Just ""     -> seg
+                                         Just prompt -> Just $ "%F{" ++ color ++ "}" ++ prompt ++ "%f"
+                                         _           -> Nothing
 
 font = undefined
+
+promptSymbol :: String -> PromptSegment
+promptSymbol = return . Just
+
+separator :: String -> PromptSegment
+separator = return . Just
 
 space :: Maybe String -> PromptSegment
 space mSeg = return $ case mSeg of Just ""        -> mSeg

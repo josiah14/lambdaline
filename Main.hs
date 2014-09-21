@@ -12,12 +12,16 @@ getTerminalWidth = liftM L.head getArgs
 main :: IO ()
 main = buildMainPrompt
          [ liftM Just getCurrentDirectory >>= space
-         , (((gitUnstagedSymbol "✚" >>= color gold1)
-           >+< (gitStagedSymbol "✎" >>= color darkOrange1)
-           >+< (gitPushSymbol "↑" >>= color red1)) >>= space)
-           >+< gitCurrentBranch
-           >+< (gitRepositorySymbol "±" >>= space)
+         , ( 
+             ( 
+               (gitUnstagedSymbol "✚" >>= fgColor gold1)
+               >+< (gitStagedSymbol "✎" >>= fgColor darkOrange1)
+               >+< (gitPushSymbol "↑" >>= fgColor red1)
+             ) >>= space
+           ) 
+           >+< (gitCurrentBranch >>= fgColor deepSkyBlue3)
+           >+< (gitRepositorySymbol "±" >>= fgColor defaultDarkGreen >>= space)
          ]
-         "➢ "
-         "λ "
+         (separator "➢ " >>= fgColor slateBlue0)
+         (promptSymbol "λ " >>= fgColor slateBlue0)
 
