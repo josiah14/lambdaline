@@ -4,42 +4,37 @@ module LambdaLine.Segment
 , buildMainPrompt
 , color
 , font
-, red
 , space
 , style
 , symbol
 ) where
-import Control.Applicative
 import Control.Monad
 import Data.Maybe
 import Data.List as L
+import LambdaLine.XTerm.Colors (Color)
 
 type PromptSegment = IO (Maybe String)
-type Color = String
-
-red :: Color
-red = show 009
 
 -- Combines 2 segments into a single segment
 (>+<) :: PromptSegment -> PromptSegment -> PromptSegment
 (>+<) = liftM2 $ \segment0 segment1 -> case catMaybes [segment0, segment1] of []       -> Nothing
                                                                               segments -> Just $ foldl1 (++) segments
 
-buildMainPrompt :: [PromptSegment] -> String -> IO ()
-buildMainPrompt segments promptSymbol =
+buildMainPrompt :: [PromptSegment] -> String -> String -> IO ()
+buildMainPrompt segments separator promptSymbol =
   (L.foldl1
      addSegment
      segments
   ) >>= putStr . (fromMaybe "") >> putStr promptSymbol
   where addSegment = liftM2 concatSeg
-          where concatSeg prompt mSeg = case mSeg of Just seg@(_:_) -> Just $ (fromMaybe "" prompt) ++ "➢ " ++ seg
+          where concatSeg prompt mSeg = case mSeg of Just seg@(_:_) -> Just $ (fromMaybe "" prompt) ++ separator ++ seg
                                                      _              -> prompt
 
 -- edit/define the color of a segment
 color :: Color -> Maybe String -> PromptSegment
-color color seg = return $ case seg of Just ""     -> seg
-                                       Just prompt -> Just $ "%F{" ++ color ++ "}" ++ prompt ++ "%f"
-                                       _           -> Nothing
+color xtermNum seg = return $ case seg of Just ""     -> seg
+                                          Just prompt -> Just $ "%F{" ++ xtermNum ++ "}" ++ prompt ++ "%f"
+                                          _           -> Nothing
 
 font = undefined
 
