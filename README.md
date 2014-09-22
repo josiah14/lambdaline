@@ -5,6 +5,12 @@ Clone of Powerline in Haskell
 
 *ZSH only is implemented/supported as of yet*
 
+#Build from Source
+- git clone this repository, then navigate to it in the command line
+- run 'ghc Main.hs' in the top level directory of the lambdaline source.
+
+#Installation
+
 To install, add the following to your .zshrc
 
 function _update_ps1() {
