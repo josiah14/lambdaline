@@ -2,6 +2,7 @@ Lambdaline
 ========
 
 Clone of Powerline in Haskell
+- Though the implementation relies heavily on Monads, Functors, Applicative Functors, and the like, the high level API was designed so that one does not need to know what these things are to build a decent configuration.  The intention is that the example Main.hs file should be intuitive enough for most programmers to figure out the basic DSL language for building prompts and status lines with this program.
 
 *ZSH only is implemented/supported as of yet*
 
