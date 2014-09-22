@@ -1,14 +1,13 @@
-module LambdaLine.Segment
+module LambdaLine.PromptSegment
 ( PromptSegment
 , (>+<)
+, bgColor
+, bold
 , buildMainPrompt
 , fgColor
-, font
-, promptSymbol
-, separator
+, makePromptSegment
 , space
-, style
-, symbol
+, underline
 ) where
 import Control.Monad
 import Data.Maybe
@@ -22,6 +21,16 @@ type PromptSegment = IO (Maybe String)
 (>+<) = liftM2 $ \segment0 segment1 -> case catMaybes [segment0, segment1] of []       -> Nothing
                                                                               segments -> Just $ foldl1 (++) segments
 
+bgColor :: Color -> Maybe String -> PromptSegment
+bgColor color seg = return $ case seg of Just ""     -> seg
+                                         Just prompt -> Just $ "%K{" ++ color ++ "}" ++ prompt ++ "%k"
+                                         _           -> Nothing
+
+bold :: Maybe String -> PromptSegment
+bold mSeg = return $ case mSeg of Just ""  -> mSeg
+                                  Just seg -> Just $ "%B" ++ seg ++ "%b"
+                                  _        -> Nothing
+
 buildMainPrompt :: [PromptSegment] -> PromptSegment -> PromptSegment -> IO ()
 buildMainPrompt segments separator promptSymbol =
   (L.foldl1
@@ -30,8 +39,8 @@ buildMainPrompt segments separator promptSymbol =
   ) >>= putStr . (fromMaybe "") >> promptSymbol >>= putStr . (fromMaybe "" )
   where addSegment = 
           liftM3 concatSeg separator
-                where concatSeg separator prompt mSeg =
-                        case mSeg of Just seg@(_:_) -> Just $ (fromMaybe "" prompt) ++ (fromMaybe "" separator) ++ seg
+                where concatSeg sep prompt mSeg =
+                        case mSeg of Just seg@(_:_) -> Just $ (fromMaybe "" prompt) ++ (fromMaybe "" sep) ++ seg
                                      _              -> prompt
 
 -- edit/define the foreground/font color of a segment
@@ -40,20 +49,15 @@ fgColor color seg = return $ case seg of Just ""     -> seg
                                          Just prompt -> Just $ "%F{" ++ color ++ "}" ++ prompt ++ "%f"
                                          _           -> Nothing
 
-font = undefined
-
-promptSymbol :: String -> PromptSegment
-promptSymbol = return . Just
-
-separator :: String -> PromptSegment
-separator = return . Just
+makePromptSegment :: String -> PromptSegment
+makePromptSegment = return . Just
 
 space :: Maybe String -> PromptSegment
 space mSeg = return $ case mSeg of Just ""        -> mSeg
                                    Just seg       -> Just $ seg ++ " "
                                    _              -> Nothing
 
-style = undefined
-
-symbol = undefined
-
+underline :: Maybe (String) -> PromptSegment
+underline mSeg = return $ case mSeg of Just ""  -> mSeg
+                                       Just seg -> Just $ "%U" ++ seg ++ "%u"
+                                       _        -> Nothing

@@ -3,7 +3,7 @@ import System.Environment
 import Control.Monad
 import Data.List as L
 import LambdaLine.GitComm
-import LambdaLine.Segment
+import LambdaLine.PromptSegment
 import LambdaLine.XTerm.Colors
 
 getTerminalWidth :: IO (String)
@@ -11,17 +11,17 @@ getTerminalWidth = liftM L.head getArgs
 
 main :: IO ()
 main = buildMainPrompt
-         [ liftM Just getCurrentDirectory >>= space
-         , ( 
-             ( 
-               (gitUnstagedSymbol "✚" >>= fgColor gold1)
-               >+< (gitStagedSymbol "✎" >>= fgColor darkOrange1)
-               >+< (gitPushSymbol "↑" >>= fgColor red1)
-             ) >>= space
-           ) 
-           >+< (gitCurrentBranch >>= fgColor deepSkyBlue3)
-           >+< (gitRepositorySymbol "±" >>= fgColor defaultDarkGreen >>= space)
+         [ liftM Just getCurrentDirectory >>= bold >>= fgColor grey0 >>= bgColor defaultWhite
+         , (gitCurrentBranch >>= fgColor deepSkyBlue3 >>= underline >>= bold) 
+           >+< (gitRepositorySymbol "±" >>= fgColor defaultDarkGreen >>= bold >>= space)
+           >+< ( 
+                 ( 
+                   (gitUnstagedSymbol "✚" >>= fgColor gold1)
+                   >+< (gitStagedSymbol "✎" >>= fgColor orange)
+                   >+< (gitPushSymbol "↑" >>= fgColor red1 >>= bold)
+                 )
+               )
          ]
-         (separator "➢ " >>= fgColor slateBlue0)
-         (promptSymbol "λ " >>= fgColor slateBlue0)
+         (makePromptSegment " ➢ " >>= fgColor slateBlue0 >>= bold)
+         (makePromptSegment " λ» " >>= fgColor slateBlue0 >>= bold)
 

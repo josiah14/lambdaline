@@ -9,7 +9,7 @@ module LambdaLine.GitComm
 ) where
 -- internal imports
 import LambdaLine.Util
-import LambdaLine.Segment (PromptSegment)
+import LambdaLine.PromptSegment (PromptSegment)
 -- external lib imports
 import Control.Monad
 import Data.Maybe
