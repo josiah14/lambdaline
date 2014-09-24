@@ -34,6 +34,7 @@ For multi-line prompts, the eventual goal is to eliminate segments of the prompt
 - Mercurial support
 - TMux status line
 - Vim Status line *(will be implemented using timL - a Lisp that compiles to VimScript, due to the complications of interacting with Vim from outside languages like Haskell, even if they are supported for plugins, because, who wants to recompile their Vim installation for a plugin, really?)*
+- Emacs status line
 - Bazaar support
 - CVS support
 
