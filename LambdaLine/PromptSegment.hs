@@ -6,6 +6,7 @@ module LambdaLine.PromptSegment
 , buildMainPrompt
 , fgColor
 , makePromptSegment
+, prependSpace
 , space
 , underline
 ) where
@@ -51,6 +52,11 @@ fgColor color seg = return $ case seg of Just ""     -> seg
 
 makePromptSegment :: String -> PromptSegment
 makePromptSegment = return . Just
+
+prependSpace :: Maybe String -> PromptSegment
+prependSpace mSeg = return $ case mSeg of Just ""        -> mSeg
+                                          Just seg       -> Just $ ' ':seg
+                                          _              -> Nothing
 
 space :: Maybe String -> PromptSegment
 space mSeg = return $ case mSeg of Just ""        -> mSeg
