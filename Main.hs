@@ -15,19 +15,17 @@ currentDirectory = Just <$> getCurrentDirectory
 
 main :: IO ()
 main = buildMainPrompt
-         [ (bold . fgColor skyBlue) <$> currentDirectory
-         ,  ((fgColor deepSkyBlue3 . underline . bold) <$> gitCurrentBranch)
-           >+< ((fgColor defaultDarkGreen . bold) <$> gitRepositorySymbol "±")  
+         [ bold . fgColor skyBlue <$> currentDirectory
+         ,  (fgColor deepSkyBlue3 . underline . bold <$> gitCurrentBranch)
+           >+< (fgColor defaultDarkGreen . bold <$> gitRepositorySymbol "±")
            >+< (
                  prependSpace <$> (
                    (fgColor gold1 <$> gitUnstagedSymbol "✚")
                    >+< (fgColor orange <$> gitStagedSymbol "✎")
-                   >+< ((fgColor red1 . bold) <$> gitPushSymbol "↑")
+                   >+< (fgColor red1 . bold <$> gitPushSymbol "↑")
                  )
                )
          ]
-         ((fgColor red0 . bold) <$> makePromptSegment "⇶ ")
-         ((fgColor slateBlue0 . bold) <$> makePromptSegment " λ» ")
-
-         -- (makePromptSegment " ➢ " >>= fgColor slateBlue0 >>= bold)
+         (fgColor red0 . bold <$> makePromptSegment " ➢ ")
+         (fgColor slateBlue0 . bold <$> makePromptSegment " λ» ")
 
