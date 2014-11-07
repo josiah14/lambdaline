@@ -29,3 +29,10 @@ main = buildMainPrompt
          (fgColor red0 . bold <$> makePromptSegment " ➢ ")
          (fgColor slateBlue0 . bold <$> makePromptSegment " λ» ")
 
+gitStatusSegment :: PromptSegment
+gitStatusSegment =
+  let unstagedSymbol = fgColor gold1 <$> gitUnstagedSymbol "✚"
+      stagedSymbol   = fgColor orange <$> gitStagedSymbol "✎"
+      pushSymbol     = fgColor red1 . bold <$> gitPushSymbol "↑"
+  in prependSpace <$> unstagedSymbol >+< stagedSymbol >+< pushSymbol
+
