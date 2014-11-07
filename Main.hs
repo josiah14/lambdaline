@@ -18,13 +18,7 @@ main = buildMainPrompt
          [ bold . fgColor skyBlue <$> currentDirectory
          ,  (fgColor deepSkyBlue3 . underline . bold <$> gitCurrentBranch)
            >+< (fgColor defaultDarkGreen . bold <$> gitRepositorySymbol "±")
-           >+< (
-                 prependSpace <$> (
-                   (fgColor gold1 <$> gitUnstagedSymbol "✚")
-                   >+< (fgColor orange <$> gitStagedSymbol "✎")
-                   >+< (fgColor red1 . bold <$> gitPushSymbol "↑")
-                 )
-               )
+           >+< gitStatusSegment
          ]
          (fgColor red0 . bold <$> makePromptSegment " ➢ ")
          (fgColor slateBlue0 . bold <$> makePromptSegment " λ» ")
