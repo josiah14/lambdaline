@@ -10,12 +10,18 @@ module LambdaLine.PromptSegment
 , space
 , underline
 ) where
+import Control.Applicative
 import Control.Monad
 import Data.Maybe
+import Data.Monoid
 import Data.List as L
 import LambdaLine.XTerm.Colors (Color)
 
 type PromptSegment = IO (Maybe String)
+
+instance Monoid a => Monoid (IO a) where
+  mempty = return mempty
+  mappend = liftA2 (<>)
 
 -- Combines 2 segments into a single segment
 (>+<) :: PromptSegment -> PromptSegment -> PromptSegment
