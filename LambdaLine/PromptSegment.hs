@@ -1,76 +1,35 @@
 module LambdaLine.PromptSegment
 ( PromptSegment
-, (>+<)
-, bgColor
-, bold
 , buildMainPrompt
-, fgColor
+, convertToPromptSegment
 , makePromptSegment
-, prependSpace
-, space
-, underline
 ) where
 import Control.Applicative
-import Control.Monad
 import Data.Maybe
 import Data.Monoid
 import Data.List as L
-import LambdaLine.XTerm.Colors (Color)
 
-type PromptSegment = IO (Maybe String)
+data PromptSegment a = PromptSegment (IO (Maybe a))
 
-instance Monoid a => Monoid (IO a) where
-  mempty = return mempty
-  mappend = liftA2 (<>)
+instance Functor PromptSegment where
+  fmap f (PromptSegment p) = PromptSegment $ fmap (fmap f) p
 
--- Combines 2 segments into a single segment
-(>+<) :: PromptSegment -> PromptSegment -> PromptSegment
-(>+<) = liftM2 $ \segment0 segment1 -> case catMaybes [segment0, segment1] of []       -> Nothing
-                                                                              segments -> Just $ foldl1 (++) segments
+instance Monoid a => Monoid (PromptSegment a) where
+  mempty = PromptSegment $ return mempty
+  mappend (PromptSegment p1) (PromptSegment p2) = PromptSegment $ liftA2 (<>) p1 p2
 
-bgColor :: Color -> Maybe String -> Maybe String
-bgColor color seg = case seg of Just ""     -> seg
-                                Just prompt -> Just $ "%K{" ++ color ++ "}" ++ prompt ++ "%k"
-                                _           -> Nothing
+-- Exposed API Methods --
 
-bold :: Maybe String -> Maybe String
-bold mSeg = case mSeg of Just ""  -> mSeg
-                         Just seg -> Just $ "%B" ++ seg ++ "%b"
-                         _        -> Nothing
-
-buildMainPrompt :: [PromptSegment] -> PromptSegment -> PromptSegment -> IO ()
+buildMainPrompt :: [PromptSegment String] -> String -> String -> IO ()
 buildMainPrompt segments separator promptSymbol =
-  (L.foldl1
-     addSegment
-     segments
-  ) >>= putStr . (fromMaybe "") >> promptSymbol >>= putStr . (fromMaybe "" )
-  where addSegment =
-          liftM3 concatSeg separator
-                where concatSeg sep prompt mSeg =
-                        case mSeg of Just seg@(_:_) -> Just $ (fromMaybe "" prompt) ++ (fromMaybe "" sep) ++ seg
-                                     _              -> prompt
+  let sequenceIO           promptSegments = sequence $ map (\(PromptSegment p) -> p) promptSegments
+      intersperseSeparator ioMaybes       = fmap (\segs -> intersperse separator $ catMaybes segs) ioMaybes
+      appendPromptSymbol   ioStrings      = fmap (\segs -> segs ++ [promptSymbol]) ioStrings
+  in concat <$> (appendPromptSymbol $ intersperseSeparator $ sequenceIO segments) >>= putStr
 
--- edit/define the foreground/font color of a segment
-fgColor :: Color -> Maybe String -> Maybe String
-fgColor color seg = case seg of Just ""     -> seg
-                                Just prompt -> Just $ "%F{" ++ color ++ "}" ++ prompt ++ "%f"
-                                _           -> Nothing
+convertToPromptSegment :: IO (Maybe String) -> PromptSegment String
+convertToPromptSegment = PromptSegment
 
-makePromptSegment :: String -> PromptSegment
-makePromptSegment = return . Just
-
-prependSpace :: Maybe String -> Maybe String
-prependSpace mSeg = case mSeg of Just ""        -> mSeg
-                                 Just seg       -> Just $ ' ':seg
-                                 _              -> Nothing
-
-space :: Maybe String -> Maybe String
-space mSeg = case mSeg of Just ""        -> mSeg
-                          Just seg       -> Just $ seg ++ " "
-                          _              -> Nothing
-
-underline :: Maybe String -> Maybe String
-underline mSeg = case mSeg of Just ""  -> mSeg
-                              Just seg -> Just $ "%U" ++ seg ++ "%u"
-                              _        -> Nothing
+makePromptSegment :: String -> PromptSegment String
+makePromptSegment = PromptSegment . return . Just
 
