@@ -13,7 +13,7 @@ currentDirectory :: PromptSegment String
 currentDirectory = convertToPromptSegment $ Just <$> getCurrentDirectory
 
 main :: IO ()
-main = buildMainPrompt
+main = buildPrompt
          [ bold . fgColor skyBlue <$> currentDirectory
          , gitInformationSegment
          ]

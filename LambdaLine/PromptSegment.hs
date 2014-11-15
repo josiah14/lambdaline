@@ -1,6 +1,6 @@
 module LambdaLine.PromptSegment
 ( PromptSegment
-, buildMainPrompt
+, buildPrompt
 , convertToPromptSegment
 , makePromptSegment
 ) where
@@ -20,8 +20,8 @@ instance Monoid a => Monoid (PromptSegment a) where
 
 -- Exposed API Methods --
 
-buildMainPrompt :: [PromptSegment String] -> String -> String -> IO ()
-buildMainPrompt segments separator promptSymbol =
+buildPrompt :: [PromptSegment String] -> String -> String -> IO ()
+buildPrompt segments separator promptSymbol =
   let sequenceIO           promptSegments = sequence $ map (\(PromptSegment p) -> p) promptSegments
       intersperseSeparator ioMaybes       = fmap (\segs -> intersperse separator $ catMaybes segs) ioMaybes
       appendPromptSymbol   ioStrings      = fmap (\segs -> segs ++ [promptSymbol]) ioStrings

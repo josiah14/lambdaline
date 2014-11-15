@@ -12,3 +12,4 @@ module LambdaLine.LambdaLine
 import Data.Functor
 import Data.Monoid
 import LambdaLine.PromptSegment
+
