@@ -2,7 +2,7 @@ module LambdaLine.LambdaLine
 ( PromptSegment
 , (<$>)
 , (<>)
-, buildMainPrompt
+, buildPrompt
 , convertToPromptSegment
 , fmap
 , makePromptSegment
