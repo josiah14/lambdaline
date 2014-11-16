@@ -1,8 +1,12 @@
 module LambdaLine.Shells.Base
 ( appendSpace
+, buildPrompt
+, convertToPromptSegment
+, makePromptSegment
 , prependSpace
 , stylePrompt
 ) where
+import LambdaLine.PromptSegment
 
 appendSpace :: String -> String
 appendSpace = stylePrompt (++ " ")
