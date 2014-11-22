@@ -1,6 +1,5 @@
 module LambdaLine.Shells.Base
 ( appendSpace
-, buildPrompt
 , convertToPromptSegment
 , makePromptSegment
 , prependSpace

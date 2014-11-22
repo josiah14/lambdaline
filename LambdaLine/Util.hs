@@ -1,5 +1,7 @@
 module LambdaLine.Util
 ( ProcessResponse
+, getPromptType
+, getTerminalWidth
 , deleteNulls
 , isResponseNull
 , parseProcessResponse
@@ -9,6 +11,8 @@ module LambdaLine.Util
 )
 where
 import Control.Monad
+import Data.Functor((<$>))
+import System.Environment(getArgs)
 import Data.List as L
 import Data.List.Split as SP
 import Data.Text as T
@@ -36,4 +40,10 @@ stdOutListAny = liftM (fmap $ not . L.null)
 
 trimString :: String -> String
 trimString = unpack . strip . pack
+
+getPromptType :: IO String
+getPromptType = L.head <$> getArgs
+
+getTerminalWidth :: IO String
+getTerminalWidth = (!!1) <$> getArgs
 
