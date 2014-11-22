@@ -21,14 +21,15 @@ exec prompts = getPromptType >>= (\promptType -> snd $ head $ dropWhile (\testVa
 main :: IO ()
 main = exec [ ("Zsh", zshPrompt) ]
 
-zshPrompt :: IO ()
-zshPrompt = buildPrompt
-              [ bold zshStyler . fgColor zshStyler skyBlue <$> currentDirectory
-              , gitInformationSegment zshStyler
-              ]
-              (fgColor zshStyler red0 . bold zshStyler $ " ➢ ")
-              (fgColor zshStyler slateBlue0 . bold zshStyler $ " λ» ")
+shellPrompt :: ShellPromptStyler -> String -> IO ()
+shellPrompt styler = buildPrompt
+                       [ bold styler . fgColor styler skyBlue <$> currentDirectory
+                       , gitInformationSegment styler
+                       ]
+                       (fgColor styler red0 . bold styler $ " ➢ ")
 
+zshPrompt :: IO ()
+zshPrompt = shellPrompt zshStyler (fgColor zshStyler slateBlue0 . bold zshStyler $ " λ» ")
 
 gitStatusSegment :: ShellPromptStyler -> ShellPromptSegment String
 gitStatusSegment styler =
