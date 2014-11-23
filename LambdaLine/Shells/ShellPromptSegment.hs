@@ -4,9 +4,11 @@
 
 module LambdaLine.Shells.ShellPromptSegment
 ( ShellPromptSegment(..) 
-, ShellPromptStyler(..)
+, ShellPromptType(..)
 , PromptSegment(..)
-, cycle3
+, (&)
+, buildShellPrompt
+, style
 ) where
   
 import LambdaLine.XTerm.Colors
@@ -17,13 +19,14 @@ import Data.List as L
 import Data.Maybe
 import LambdaLine.PromptSegment
 
-data ShellPromptStyler = ShellPromptStyler
-  { appendSpace :: String -> String
-  , bgColor :: Color ->  String -> String
-  , bold :: String -> String 
-  , fgColor :: Color ->  String -> String
-  , prependSpace :: String -> String
-  , underline :: String -> String 
+data ShellPromptType = ShellPromptType
+  { appendSpace' :: String -> String
+  , bgColor' :: Color ->  String -> String
+  , bold' :: String -> String 
+  , fgColor' :: Color ->  String -> String
+  , plain' :: String -> String
+  , prependSpace' :: String -> String
+  , underline' :: String -> String 
   }
 
 data ShellPromptSegment a = ShellPromptSegment (IO (Maybe a))
@@ -44,7 +47,26 @@ instance PromptSegment ShellPromptSegment String where
   convertToPromptSegment = ShellPromptSegment
   makePromptSegment = ShellPromptSegment . return . Just
 
--- helper functions
-cycle3 :: (a -> b -> c -> d) -> b -> c -> a -> d
-cycle3 = (flip .) . flip
+-- operator to compose shell prompt styling functions together
+(&) :: (String -> ShellPromptType -> String) -> (String -> ShellPromptType -> String)
+       -> (String -> ShellPromptType -> String)
+f & g = \str shellType -> g (f str shellType) shellType 
+
+buildShellPrompt :: [(ShellPromptType -> ShellPromptSegment String)]
+                      -> (ShellPromptType -> String)
+                      -> (ShellPromptType -> String)
+                      -> ShellPromptType
+                      -> IO ()
+buildShellPrompt segmentMakers makeSeparator makePromptSymbol shellType =
+  let segments = map (\f -> f shellType) segmentMakers
+      separator = makeSeparator shellType
+      promptSymbol = makePromptSymbol shellType
+  in buildPrompt segments separator promptSymbol
+
+-- apply a style function to a shell prompt functor
+-- e.g.
+-- bold & fgColor red `style` gitCurrentBranch
+style :: (String -> ShellPromptType -> String) -> ShellPromptSegment String
+           -> (ShellPromptType -> ShellPromptSegment String)
+style f segment = \shType -> (flip f) shType <$> segment
 

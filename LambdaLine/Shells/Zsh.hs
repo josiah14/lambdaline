@@ -1,27 +1,60 @@
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE TypeSynonymInstances #-}
-{-# LANGUAGE FlexibleInstances #-}
-
 module LambdaLine.Shells.Zsh
 ( ShellPromptSegment(..)
-, S.appendSpace
+, ShellPromptType
+, (S.&)
+, appendSpace
 , bgColor
+, S.buildShellPrompt
 , bold
 , fgColor
+, plain
+, prependSpace
+, shell
+, S.style
 , underline
-, S.prependSpace
-, zshStyler
 ) where
-import LambdaLine.Shells.Base as B
+import qualified LambdaLine.Shells.Base as B
 import LambdaLine.Shells.ShellPromptSegment as S
+import LambdaLine.XTerm.Colors (Color)
+import LambdaLine.Util (cycle3)
 
-zshStyler :: ShellPromptStyler
-zshStyler = ShellPromptStyler
-  { S.appendSpace = B.appendSpace
-  , bgColor = (\color -> stylePrompt (\s -> "%K{" ++ color ++ "}" ++ s ++ "%k"))
-  , bold = stylePrompt (\s -> "%B" ++ s ++ "%b")
-  , fgColor = (\color -> stylePrompt (\s -> "%F{" ++ color ++ "}" ++ s ++ "%f"))
-  , S.prependSpace = B.prependSpace
-  , underline = stylePrompt (\s -> "%U" ++ s ++ "%u")
+shell :: ShellPromptType
+shell = ShellPromptType
+  { appendSpace'  = B.appendSpace
+  , bgColor'      = zshBgColor
+  , bold'         = B.stylePrompt (\s -> "%B" ++ s ++ "%b")
+  , fgColor'      = zshFgColor
+  , plain'        = B.plain
+  , prependSpace' = B.prependSpace
+  , underline'    = B.stylePrompt (\s -> "%U" ++ s ++ "%u")
   }
+
+appendSpace :: String -> ShellPromptType -> String
+appendSpace = flip appendSpace'
+
+bgColor :: Color -> String -> ShellPromptType -> String
+bgColor = cycle3 bgColor'
+
+bold :: String -> ShellPromptType -> String
+bold = flip bold'
+
+fgColor :: Color -> String -> ShellPromptType -> String
+fgColor = cycle3 fgColor'
+
+plain :: String -> ShellPromptType -> String
+plain = flip plain'
+
+prependSpace :: String -> ShellPromptType -> String
+prependSpace = flip prependSpace'
+
+underline :: String -> ShellPromptType -> String
+underline = flip underline'
+
+-- internal definitions to ease readability
+
+zshBgColor :: Color -> String -> String
+zshBgColor color = B.stylePrompt (\s -> "%K{" ++ color ++ "}" ++ s ++ "%k")
+
+zshFgColor :: Color -> String -> String
+zshFgColor color = B.stylePrompt (\s -> "%F{" ++ color ++ "}" ++ s ++ "%f")
 
