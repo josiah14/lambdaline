@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module LambdaLine.System
 ( batteryPercentage
 , batteryTimeLeft
@@ -8,7 +10,6 @@ module LambdaLine.System
 , currentUserName
 ) where
 import LambdaLine.Segment
-import LambdaLine.Shells.ShellSegment
 import Data.Functor
 -- import Control.Monad
 -- import Data.Time.Clock
@@ -16,21 +17,21 @@ import Data.Functor
 import System.Directory
 -- import System.Posix.User
 
-batteryPercentage :: ShellSegment String
+batteryPercentage :: Segment f String => f String
 batteryPercentage = undefined
 
-batteryTimeLeft :: ShellSegment String
+batteryTimeLeft :: Segment f String => f String
 batteryTimeLeft = undefined
 
 -- This function indicates whether the battery is full, charging, or
 -- discharging
--- batteryStatus :: ShellSegment String
+-- batteryStatus :: Segment f String => f String
 -- batteryStatus = undefined
 
-currentDirectory :: ShellSegment String
+currentDirectory :: Segment f FilePath => f FilePath
 currentDirectory = mkSegment $ Just <$> getCurrentDirectory
 
-currentHostName :: ShellSegment String
+currentHostName :: Segment f String => f String
 currentHostName = undefined -- getHostName
 
 -- first input is the format, second is the separator.
@@ -55,7 +56,7 @@ currentHostName = undefined -- getHostName
 -- currentDate :: String -> ShellSegment String
 -- currentDate format = undefined
 
-currentUserName :: ShellSegment String
+currentUserName :: Segment f String => f String
 currentUserName = undefined -- getEffectiveUserName
 
 -- ioToSegment :: IO String -> ShellSegment String
