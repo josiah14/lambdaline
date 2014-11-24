@@ -26,9 +26,9 @@ gitPushSymbol :: Segment f String => String -> f String
 gitPushSymbol symbol = mkSegment $ hasCommitsToPush >>= calculateStatusSymbol symbol
 
 gitRepositorySymbol :: Segment f String => String -> f String
-gitRepositorySymbol symbol = mkSegment $ inGitRepository >>= (\git -> if git == True
-                                                                                   then return $ Just symbol
-                                                                                   else return Nothing)
+gitRepositorySymbol symbol = mkSegment $ inGitRepository >>= (\git -> return $ if git
+                                                                               then Just symbol
+                                                                               else Nothing)
 
 gitStagedSymbol :: Segment f String => String -> f String
 gitStagedSymbol symbol = mkSegment $ hasStagedChanges >>= calculateStatusSymbol symbol
@@ -45,8 +45,8 @@ gitStatusSymbols unstagedSym stagedSym committedSym =
 gitUnstagedSymbol :: Segment f String => String -> f String
 gitUnstagedSymbol symbol = mkSegment $ hasUnstagedChanges >>= calculateStatusSymbol symbol
 
-inGitRepository :: IO (Bool)
-inGitRepository = return . isJust =<< (parseProcessResponse $ readProcessWithExitCode "git" ["rev-parse"] [])
+inGitRepository :: IO Bool
+inGitRepository = return . isJust =<< parseProcessResponse (readProcessWithExitCode "git" ["rev-parse"] [])
 
 -- private functions and types
 
@@ -56,9 +56,9 @@ data RepoStatus = RepoStatus { unstagedChanges :: Bool
                              } deriving Show
 
 calculateStatusSymbol :: String -> Maybe Bool -> IO (Maybe String)
-calculateStatusSymbol symbol mUnstaged = inGitRepository >>= (\inGitRepo -> if inGitRepo && fromMaybe False mUnstaged
-                                                                              then return $ Just symbol
-                                                                              else return Nothing)
+calculateStatusSymbol symbol mUnstaged = inGitRepository >>= (\inGitRepo -> return $ if inGitRepo && fromMaybe False mUnstaged
+                                                                                     then Just symbol
+                                                                                     else Nothing)
 
 getCurrentRepoStatus :: IO (Maybe RepoStatus)
 getCurrentRepoStatus = do

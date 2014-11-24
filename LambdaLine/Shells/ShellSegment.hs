@@ -31,10 +31,10 @@ instance (Monoid a) => Monoid (ShellSegment a) where
 
 instance Segment ShellSegment String where
   buildPrompt segments separator promptSymbol =
-    let sequenceIO           promptSegments = sequence $ map (\(ShellSegment p) -> p) promptSegments
-        intersperseSeparator ioMaybes       = fmap (\segs -> intersperse separator $ catMaybes segs) ioMaybes
-        appendPromptSymbol   ioStrings      = fmap (\segs -> segs ++ [promptSymbol]) ioStrings
-    in concat <$> (appendPromptSymbol $ intersperseSeparator $ sequenceIO segments) >>= putStr
+    let sequenceIO           = mapM (\(ShellSegment p) -> p)
+        intersperseSeparator = fmap (intersperse separator . catMaybes)
+        appendPromptSymbol   = fmap (\segs -> segs ++ [promptSymbol])
+    in concat <$> appendPromptSymbol (intersperseSeparator $ sequenceIO segments) >>= putStr
   mkSegment = ShellSegment
   stringToSegment = ShellSegment . return . Just
 
@@ -50,10 +50,10 @@ data ShellType = ShellType
 
 -- operator to compose shell prompt styling functions together
 (&) :: (String -> ShellType -> String) -> (String -> ShellType -> String)
-       -> (String -> ShellType -> String)
+       -> String -> ShellType -> String
 f & g = \str shellType -> g (f str shellType) shellType
 
-buildShellPrompt :: [(ShellType -> ShellSegment String)]
+buildShellPrompt :: [ShellType -> ShellSegment String]
                       -> (ShellType -> String)
                       -> (ShellType -> String)
                       -> ShellType
@@ -65,11 +65,11 @@ buildShellPrompt segmentMakers makeSeparator makePromptSymbol shellType =
   in buildPrompt segments separator promptSymbol
 
 mkShellSegment :: ShellSegment String -> ShellType -> ShellSegment String
-mkShellSegment segment = mkFn (flip plain') segment
-  where mkFn f seg = \shType -> (flip f) shType <$> seg
+mkShellSegment = mkFn (flip plain')
+  where mkFn f seg shType = flip f shType <$> seg
 
 style :: (String -> ShellType -> String)
             -> (ShellType -> ShellSegment String)
             -> ShellType -> ShellSegment String
-style f makeSegment = flip f >>= \g shellType -> g <$> (makeSegment shellType)
+style f makeSegment = flip f >>= \g shellType -> g <$> makeSegment shellType
 

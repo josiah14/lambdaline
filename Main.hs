@@ -30,6 +30,6 @@ gitStatusSegment =
 gitInformationSegment :: ShellType -> ShellSegment String
 gitInformationSegment =
   let branch = fgColor deepSkyBlue3 & underline & bold `style` mkShellSegment gitCurrentBranch
-      repoType = fgColor defaultDarkGreen & bold `style` (mkShellSegment $ gitRepositorySymbol "±")
+      repoType = fgColor defaultDarkGreen & bold `style` mkShellSegment (gitRepositorySymbol "±")
   in branch <> repoType <> gitStatusSegment
 
