@@ -25,7 +25,7 @@ gitStatusSegment =
   let unstagedSymbol = fgColor gold1 `style` mkShellSegment (gitUnstagedSymbol "✚")
       stagedSymbol   = fgColor orange `style` mkShellSegment (gitStagedSymbol "✎")
       pushSymbol     = fgColor red1 & bold `style` mkShellSegment (gitPushSymbol "↑")
-  in prependSpace `style` unstagedSymbol <> stagedSymbol <> pushSymbol
+  in prependSpace `style` (unstagedSymbol <> stagedSymbol <> pushSymbol)
 
 gitInformationSegment :: ShellType -> ShellSegment String
 gitInformationSegment =

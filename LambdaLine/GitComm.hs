@@ -1,3 +1,5 @@
+{-# LANGUAGE FlexibleContexts #-}
+
 module LambdaLine.GitComm
 ( gitCurrentBranch
 , gitPushSymbol
@@ -16,22 +18,22 @@ import Data.Maybe
 import System.Process
 import LambdaLine.Shells.ShellSegment
 
-gitCurrentBranch :: ShellSegment String
+gitCurrentBranch :: Segment f String => f String
 gitCurrentBranch =
   mkSegment $ parseProcessResponse $ readProcessWithExitCode "git" ["rev-parse","--abbrev-ref","HEAD"] []
 
-gitPushSymbol :: String -> ShellSegment String
+gitPushSymbol :: Segment f String => String -> f String
 gitPushSymbol symbol = mkSegment $ hasCommitsToPush >>= calculateStatusSymbol symbol
 
-gitRepositorySymbol :: String -> ShellSegment String
+gitRepositorySymbol :: Segment f String => String -> f String
 gitRepositorySymbol symbol = mkSegment $ inGitRepository >>= (\git -> if git == True
                                                                                    then return $ Just symbol
                                                                                    else return Nothing)
 
-gitStagedSymbol :: String -> ShellSegment String
+gitStagedSymbol :: Segment f String => String -> f String
 gitStagedSymbol symbol = mkSegment $ hasStagedChanges >>= calculateStatusSymbol symbol
 
-gitStatusSymbols :: String -> String -> String -> ShellSegment String
+gitStatusSymbols :: Segment f String => String -> String -> String -> f String
 gitStatusSymbols unstagedSym stagedSym committedSym =
   mkSegment $ getCurrentRepoStatus >>= (\mStatus ->
     case mStatus of Nothing     -> return Nothing
@@ -40,7 +42,7 @@ gitStatusSymbols unstagedSym stagedSym committedSym =
                                            stagedStr    = if stagedChanges status   then stagedSym    else ""
                                            committedStr = if commitsToPush status   then committedSym else "")
 
-gitUnstagedSymbol :: String -> ShellSegment String
+gitUnstagedSymbol :: Segment f String => String -> f String
 gitUnstagedSymbol symbol = mkSegment $ hasUnstagedChanges >>= calculateStatusSymbol symbol
 
 inGitRepository :: IO (Bool)
