@@ -7,8 +7,8 @@ module LambdaLine.System
 -- , currentTime
 , currentUserName
 ) where
-import LambdaLine.PromptSegment
-import LambdaLine.Shells.ShellPromptSegment
+import LambdaLine.Segment
+import LambdaLine.Shells.ShellSegment
 import Data.Functor
 -- import Control.Monad
 -- import Data.Time.Clock
@@ -16,21 +16,21 @@ import Data.Functor
 import System.Directory
 -- import System.Posix.User
 
-batteryPercentage :: ShellPromptSegment String
+batteryPercentage :: ShellSegment String
 batteryPercentage = undefined
 
-batteryTimeLeft :: ShellPromptSegment String
+batteryTimeLeft :: ShellSegment String
 batteryTimeLeft = undefined
 
 -- This function indicates whether the battery is full, charging, or
 -- discharging
--- batteryStatus :: ShellPromptSegment String
+-- batteryStatus :: ShellSegment String
 -- batteryStatus = undefined
 
-currentDirectory :: ShellPromptSegment String
-currentDirectory = convertToPromptSegment $ Just <$> getCurrentDirectory
+currentDirectory :: ShellSegment String
+currentDirectory = mkSegment $ Just <$> getCurrentDirectory
 
-currentHostName :: ShellPromptSegment String
+currentHostName :: ShellSegment String
 currentHostName = undefined -- getHostName
 
 -- first input is the format, second is the separator.
@@ -39,7 +39,7 @@ currentHostName = undefined -- getHostName
 --      => 29/03/2014
 --      currentTime "YYYY-MM-DD" "-"
 --      => 2014-03-29
--- currentTime :: String -> String -> ShellPromptSegment String
+-- currentTime :: String -> String -> ShellSegment String
 -- currentTime format separator =
 --   case format
 --     of "YYYY-MM-DD" -> undefined
@@ -52,12 +52,12 @@ currentHostName = undefined -- getHostName
 --        "YY-DD-MM"   -> undefined
 
 
--- currentDate :: String -> ShellPromptSegment String
+-- currentDate :: String -> ShellSegment String
 -- currentDate format = undefined
 
-currentUserName :: ShellPromptSegment String
+currentUserName :: ShellSegment String
 currentUserName = undefined -- getEffectiveUserName
 
--- ioToPromptSegment :: IO String -> ShellPromptSegment String
--- ioToPromptSegment = liftM Just
+-- ioToSegment :: IO String -> ShellSegment String
+-- ioToSegment = liftM Just
 

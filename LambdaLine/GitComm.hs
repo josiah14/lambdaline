@@ -9,39 +9,39 @@ module LambdaLine.GitComm
 ) where
 -- internal imports
 import LambdaLine.Util
--- import LambdaLine.PromptSegment (PromptSegment, convertToPromptSegment)
+-- import LambdaLine.Segment (Segment, mkSegment)
 -- external lib imports
 import Control.Monad
 import Data.Maybe
 import System.Process
-import LambdaLine.Shells.ShellPromptSegment
+import LambdaLine.Shells.ShellSegment
 
-gitCurrentBranch :: ShellPromptSegment String
+gitCurrentBranch :: ShellSegment String
 gitCurrentBranch =
-  convertToPromptSegment $ parseProcessResponse $ readProcessWithExitCode "git" ["rev-parse","--abbrev-ref","HEAD"] []
+  mkSegment $ parseProcessResponse $ readProcessWithExitCode "git" ["rev-parse","--abbrev-ref","HEAD"] []
 
-gitPushSymbol :: String -> ShellPromptSegment String
-gitPushSymbol symbol = convertToPromptSegment $ hasCommitsToPush >>= calculateStatusSymbol symbol
+gitPushSymbol :: String -> ShellSegment String
+gitPushSymbol symbol = mkSegment $ hasCommitsToPush >>= calculateStatusSymbol symbol
 
-gitRepositorySymbol :: String -> ShellPromptSegment String
-gitRepositorySymbol symbol = convertToPromptSegment $ inGitRepository >>= (\git -> if git == True
+gitRepositorySymbol :: String -> ShellSegment String
+gitRepositorySymbol symbol = mkSegment $ inGitRepository >>= (\git -> if git == True
                                                                                    then return $ Just symbol
                                                                                    else return Nothing)
 
-gitStagedSymbol :: String -> ShellPromptSegment String
-gitStagedSymbol symbol = convertToPromptSegment $ hasStagedChanges >>= calculateStatusSymbol symbol
+gitStagedSymbol :: String -> ShellSegment String
+gitStagedSymbol symbol = mkSegment $ hasStagedChanges >>= calculateStatusSymbol symbol
 
-gitStatusSymbols :: String -> String -> String -> ShellPromptSegment String
+gitStatusSymbols :: String -> String -> String -> ShellSegment String
 gitStatusSymbols unstagedSym stagedSym committedSym =
-  convertToPromptSegment $ getCurrentRepoStatus >>= (\mStatus ->
+  mkSegment $ getCurrentRepoStatus >>= (\mStatus ->
     case mStatus of Nothing     -> return Nothing
                     Just status -> return $ Just $ unstagedStr ++ stagedStr ++ committedStr
                                      where unstagedStr  = if unstagedChanges status then unstagedSym  else ""
                                            stagedStr    = if stagedChanges status   then stagedSym    else ""
                                            committedStr = if commitsToPush status   then committedSym else "")
 
-gitUnstagedSymbol :: String -> ShellPromptSegment String
-gitUnstagedSymbol symbol = convertToPromptSegment $ hasUnstagedChanges >>= calculateStatusSymbol symbol
+gitUnstagedSymbol :: String -> ShellSegment String
+gitUnstagedSymbol symbol = mkSegment $ hasUnstagedChanges >>= calculateStatusSymbol symbol
 
 inGitRepository :: IO (Bool)
 inGitRepository = return . isJust =<< (parseProcessResponse $ readProcessWithExitCode "git" ["rev-parse"] [])

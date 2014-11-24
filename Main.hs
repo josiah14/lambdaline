@@ -7,32 +7,29 @@ import LambdaLine.XTerm.Colors
 main :: IO ()
 main = exec [ ("Zsh", zshPrompt Z.shell) ]
 
-zshPrompt :: ShellPromptType -> IO ()
+zshPrompt :: ShellType -> IO ()
 zshPrompt = shellPrompt (fgColor slateBlue0 & bold $ " λ» ")
 
-shellPrompt :: (ShellPromptType -> String) -> ShellPromptType -> IO ()
-shellPrompt endChar = buildShellPrompt
-                        [ bold & fgColor skyBlue `style` currentDirectory
+-- Takes the ending char to the prompt as the first argument and applies it
+-- as the second to last argument of buildShellPrompt to return a function
+-- that recieves the shell type as input
+shellPrompt :: (ShellType -> String) -> ShellType -> IO ()
+shellPrompt = buildShellPrompt
+                        [ bold & fgColor skyBlue `style` mkShellSegment currentDirectory
                         , gitInformationSegment
                         ]
                         (fgColor red0 & bold $ " ➢ ")
-                        endChar
 
-gitStatusSegment :: ShellPromptType -> ShellPromptSegment String
+gitStatusSegment :: ShellType -> ShellSegment String
 gitStatusSegment =
-  let unstagedSymbol = fgColor gold1 `style` gitUnstagedSymbol "✚"
-      stagedSymbol   = fgColor orange `style` gitStagedSymbol "✎"
-      pushSymbol     = fgColor red1 & bold `style` gitPushSymbol "↑"
-  in prependSpace `style'` (unstagedSymbol <> stagedSymbol <> pushSymbol)
+  let unstagedSymbol = fgColor gold1 `style` mkShellSegment (gitUnstagedSymbol "✚")
+      stagedSymbol   = fgColor orange `style` mkShellSegment (gitStagedSymbol "✎")
+      pushSymbol     = fgColor red1 & bold `style` mkShellSegment (gitPushSymbol "↑")
+  in prependSpace `style` unstagedSymbol <> stagedSymbol <> pushSymbol
 
-style' :: (String -> ShellPromptType -> String) 
-            -> (ShellPromptType -> ShellPromptSegment String)
-            -> ShellPromptType -> ShellPromptSegment String
-style' f makeSegment promptType = (flip f $ promptType) <$> (makeSegment promptType)
-
-gitInformationSegment :: ShellPromptType -> ShellPromptSegment String
+gitInformationSegment :: ShellType -> ShellSegment String
 gitInformationSegment =
-  let branch = fgColor  deepSkyBlue3 & underline  & bold `style` gitCurrentBranch
-      repoType = fgColor  defaultDarkGreen & bold `style` gitRepositorySymbol "±"
-  in branch <> repoType <> gitStatusSegment 
+  let branch = fgColor deepSkyBlue3 & underline & bold `style` mkShellSegment gitCurrentBranch
+      repoType = fgColor defaultDarkGreen & bold `style` (mkShellSegment $ gitRepositorySymbol "±")
+  in branch <> repoType <> gitStatusSegment
 

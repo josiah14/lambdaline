@@ -1,18 +1,18 @@
 module LambdaLine.LambdaLine
-( PromptSegment
+( Segment
 , (<$>)
 , (<>)
 , buildPrompt
-, convertToPromptSegment
+, stringToSegment
 , exec
 , fmap
-, makePromptSegment
+, mkSegment
 , mappend
 , mempty
 ) where
 import Data.Functor
 import Data.Monoid
-import LambdaLine.PromptSegment
+import LambdaLine.Segment
 import System.Environment(getArgs)
 
 getPromptType :: IO String
