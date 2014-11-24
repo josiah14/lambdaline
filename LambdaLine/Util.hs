@@ -1,6 +1,10 @@
 module LambdaLine.Util
 ( ProcessResponse
+, cycle3
+, cycle4
 , deleteNulls
+, getPromptType
+, getTerminalWidth
 , isResponseNull
 , parseProcessResponse
 , splitOnNewLine
@@ -9,6 +13,8 @@ module LambdaLine.Util
 )
 where
 import Control.Monad
+import Data.Functor((<$>))
+import System.Environment(getArgs)
 import Data.List as L
 import Data.List.Split as SP
 import Data.Text as T
@@ -16,8 +22,20 @@ import System.Exit
 
 type ProcessResponse = IO (ExitCode, String, String)
 
+cycle3 :: (a -> b -> c -> d) -> b -> c -> a -> d
+cycle3 f y z x = f x y z
+
+cycle4 :: (a -> b -> c -> d -> e) -> b -> c -> d -> a -> e
+cycle4 f x y z w = f w x y z
+
 deleteNulls :: [[a]] -> [[a]]
 deleteNulls = L.filter $ not . L.null
+
+getPromptType :: IO String
+getPromptType = L.head <$> getArgs
+
+getTerminalWidth :: IO String
+getTerminalWidth = (!!1) <$> getArgs
 
 isResponseNull :: String -> Bool
 isResponseNull = not . L.null . splitOnNewLine . trimString

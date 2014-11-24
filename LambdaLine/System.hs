@@ -1,35 +1,37 @@
 module LambdaLine.System
 ( batteryPercentage
 , batteryTimeLeft
-, currentDate
+-- , currentDate
 , currentDirectory
 , currentHostName
-, currentTime
+-- , currentTime
 , currentUserName
 ) where
-import LambdaLine.PromptSegment (PromptSegment)
-import Control.Monad
-import Data.Time.Clock
-import Network.BSD
+import LambdaLine.Segment
+import LambdaLine.Shells.ShellSegment
+import Data.Functor
+-- import Control.Monad
+-- import Data.Time.Clock
+-- import Network.BSD
 import System.Directory
-import System.Posix.User
+-- import System.Posix.User
 
-batteryPercentage :: PromptSegment
+batteryPercentage :: ShellSegment String
 batteryPercentage = undefined
 
-batteryTimeLeft :: PromptSegment
+batteryTimeLeft :: ShellSegment String
 batteryTimeLeft = undefined
 
 -- This function indicates whether the battery is full, charging, or
 -- discharging
-batteryStatus :: PromptSegment
-batteryStatus = undefined
+-- batteryStatus :: ShellSegment String
+-- batteryStatus = undefined
 
-currentDirectory :: PromptSegment
-currentDirectory = ioToPromptSegment getCurrentDirectory
+currentDirectory :: ShellSegment String
+currentDirectory = mkSegment $ Just <$> getCurrentDirectory
 
-currentHostName :: PromptSegment
-currentHostName = ioToPromptSegment getHostName
+currentHostName :: ShellSegment String
+currentHostName = undefined -- getHostName
 
 -- first input is the format, second is the separator.
 --
@@ -37,25 +39,25 @@ currentHostName = ioToPromptSegment getHostName
 --      => 29/03/2014
 --      currentTime "YYYY-MM-DD" "-"
 --      => 2014-03-29
-currentTime :: String -> String -> PromptSegment
-currentTime format separator =
-  case format
-    of "YYYY-MM-DD" -> undefined
-       "DD-MM-YYYY" -> undefined
-       "MM-DD-YYYY" -> undefined
-       "YYYY-MM-DD" -> undefined
-       "DD-MM-YY"   -> undefined
-       "MM-DD-YY"   -> undefined
-       "YY-MM-DD"   -> undefined
-       "YY-DD-MM"   -> undefined
+-- currentTime :: String -> String -> ShellSegment String
+-- currentTime format separator =
+--   case format
+--     of "YYYY-MM-DD" -> undefined
+--        "DD-MM-YYYY" -> undefined
+--        "MM-DD-YYYY" -> undefined
+--        "YYYY-MM-DD" -> undefined
+--        "DD-MM-YY"   -> undefined
+--        "MM-DD-YY"   -> undefined
+--        "YY-MM-DD"   -> undefined
+--        "YY-DD-MM"   -> undefined
 
 
-currentDate :: String -> PromptSegment
-currentDate format = undefined
+-- currentDate :: String -> ShellSegment String
+-- currentDate format = undefined
 
-currentUserName :: PromptSegment
-currentUserName = ioToPromptSegment getEffectiveUserName
+currentUserName :: ShellSegment String
+currentUserName = undefined -- getEffectiveUserName
 
-ioToPromptSegment :: IO String -> PromptSegment
-ioToPromptSegment = liftM Just
+-- ioToSegment :: IO String -> ShellSegment String
+-- ioToSegment = liftM Just
 
