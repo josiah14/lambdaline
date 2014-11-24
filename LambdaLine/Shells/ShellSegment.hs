@@ -12,12 +12,12 @@ module LambdaLine.Shells.ShellSegment
 , style
 ) where
 
-import LambdaLine.XTerm.Colors
+import LambdaLine.XTerm.Colors(Color)
 import Data.Monoid
 import Data.Functor
 import Control.Applicative
-import Data.List as L
-import Data.Maybe
+import Data.List(intersperse)
+import Data.Maybe(catMaybes)
 import LambdaLine.Segment
 
 data ShellSegment a = ShellSegment (IO (Maybe a))

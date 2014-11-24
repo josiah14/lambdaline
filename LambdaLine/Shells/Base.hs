@@ -1,9 +1,9 @@
 module LambdaLine.Shells.Base
 ( appendSpace
 , mkSegment
-, stringToSegment
 , plain
 , prependSpace
+, stringToSegment
 , stylePrompt
 ) where
 import LambdaLine.Segment
