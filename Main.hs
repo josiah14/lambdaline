@@ -13,7 +13,7 @@ zshPrompt = shellPrompt (fgColor slateBlue0 & bold $ " λ» ")
 -- Takes the ending char to the prompt as the first argument and applies it
 -- as the second to last argument of buildShellPrompt to return a function
 -- that recieves the shell type as input
-shellPrompt :: (ShellType -> String) -> ShellType -> IO ()
+shellPrompt :: SegmentSymbol -> ShellType -> IO ()
 shellPrompt = buildShellPrompt
                         [ bold & fgColor skyBlue `style` mkShellSegment currentDirectory
                         , gitInformationSegment

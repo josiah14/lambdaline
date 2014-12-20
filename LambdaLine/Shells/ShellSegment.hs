@@ -5,7 +5,9 @@
 module LambdaLine.Shells.ShellSegment
 ( GenericSegment
 , Segment(..)
+, SegmentSymbol
 , ShellSegment(..)
+, ShellStyler
 , ShellType(..)
 , (&)
 , buildShellPrompt
@@ -52,16 +54,15 @@ data ShellType = ShellType
   , underline' :: String -> String
   }
 
+type SegmentSymbol = ShellType -> String
+
+type ShellStyler = String -> SegmentSymbol
+
 -- operator to compose shell prompt styling functions together
-(&) :: (String -> ShellType -> String) -> (String -> ShellType -> String)
-       -> String -> ShellType -> String
+(&) :: ShellStyler -> ShellStyler -> ShellStyler
 f & g = \str shellType -> g (f str shellType) shellType
 
-buildShellPrompt :: [GenericSegment]
-                      -> (ShellType -> String)
-                      -> (ShellType -> String)
-                      -> ShellType
-                      -> IO ()
+buildShellPrompt :: [GenericSegment] -> SegmentSymbol -> SegmentSymbol -> ShellType -> IO ()
 buildShellPrompt segmentMakers makeSeparator makePromptSymbol shellType =
   let segments = map (\f -> f shellType) segmentMakers
       separator = makeSeparator shellType
@@ -72,8 +73,6 @@ mkShellSegment :: ShellSegment String -> GenericSegment
 mkShellSegment = mkFn (flip plain')
   where mkFn f seg shType = flip f shType <$> seg
 
-style :: (String -> ShellType -> String)
-            -> (ShellType -> ShellSegment String)
-            -> ShellType -> ShellSegment String
+style :: ShellStyler -> GenericSegment -> GenericSegment
 style f makeSegment = flip f >>= \g shellType -> g <$> makeSegment shellType
 
