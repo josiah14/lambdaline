@@ -3,7 +3,8 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 
 module LambdaLine.Shells.ShellSegment
-( Segment(..)
+( GenericSegment
+, Segment(..)
 , ShellSegment(..)
 , ShellType(..)
 , (&)
@@ -19,6 +20,9 @@ import Control.Applicative
 import Data.List(intersperse)
 import Data.Maybe(catMaybes)
 import LambdaLine.Segment
+
+-- a GenericSegment is an promptType -> Segment String
+type GenericSegment = ShellType -> ShellSegment String
 
 data ShellSegment a = ShellSegment (IO (Maybe a))
 
@@ -53,7 +57,7 @@ data ShellType = ShellType
        -> String -> ShellType -> String
 f & g = \str shellType -> g (f str shellType) shellType
 
-buildShellPrompt :: [ShellType -> ShellSegment String]
+buildShellPrompt :: [GenericSegment]
                       -> (ShellType -> String)
                       -> (ShellType -> String)
                       -> ShellType
@@ -64,7 +68,7 @@ buildShellPrompt segmentMakers makeSeparator makePromptSymbol shellType =
       promptSymbol = makePromptSymbol shellType
   in buildPrompt segments separator promptSymbol
 
-mkShellSegment :: ShellSegment String -> ShellType -> ShellSegment String
+mkShellSegment :: ShellSegment String -> GenericSegment
 mkShellSegment = mkFn (flip plain')
   where mkFn f seg shType = flip f shType <$> seg
 

@@ -20,14 +20,14 @@ shellPrompt = buildShellPrompt
                         ]
                         (fgColor red0 & bold $ " ➢ ")
 
-gitStatusSegment :: ShellType -> ShellSegment String
+gitStatusSegment :: GenericSegment
 gitStatusSegment =
   let unstagedSymbol = fgColor gold1 `style` mkShellSegment (gitUnstagedSymbol "✚")
       stagedSymbol   = fgColor orange `style` mkShellSegment (gitStagedSymbol "✎")
       pushSymbol     = fgColor red1 & bold `style` mkShellSegment (gitPushSymbol "↑")
   in prependSpace `style` (unstagedSymbol <> stagedSymbol <> pushSymbol)
 
-gitInformationSegment :: ShellType -> ShellSegment String
+gitInformationSegment :: GenericSegment
 gitInformationSegment =
   let branch = fgColor deepSkyBlue3 & underline & bold `style` mkShellSegment gitCurrentBranch
       repoType = fgColor defaultDarkGreen & bold `style` mkShellSegment (gitRepositorySymbol "±")

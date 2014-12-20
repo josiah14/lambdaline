@@ -1,5 +1,6 @@
 module LambdaLine.Shells.Zsh
-( ShellSegment
+( GenericSegment
+, ShellSegment
 , ShellType
 , (S.&)
 , appendSpace
