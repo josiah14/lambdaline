@@ -3,8 +3,11 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 
 module LambdaLine.Shells.ShellSegment
-( Segment(..)
+( GenericSegment
+, Segment(..)
+, SegmentSymbol
 , ShellSegment(..)
+, ShellStyler
 , ShellType(..)
 , (&)
 , buildShellPrompt
@@ -19,6 +22,9 @@ import Control.Applicative
 import Data.List(intersperse)
 import Data.Maybe(catMaybes)
 import LambdaLine.Segment
+
+-- a GenericSegment is an promptType -> Segment String
+type GenericSegment = ShellType -> ShellSegment String
 
 data ShellSegment a = ShellSegment (IO (Maybe a))
 
@@ -48,28 +54,25 @@ data ShellType = ShellType
   , underline' :: String -> String
   }
 
+type SegmentSymbol = ShellType -> String
+
+type ShellStyler = String -> SegmentSymbol
+
 -- operator to compose shell prompt styling functions together
-(&) :: (String -> ShellType -> String) -> (String -> ShellType -> String)
-       -> String -> ShellType -> String
+(&) :: ShellStyler -> ShellStyler -> ShellStyler
 f & g = \str shellType -> g (f str shellType) shellType
 
-buildShellPrompt :: [ShellType -> ShellSegment String]
-                      -> (ShellType -> String)
-                      -> (ShellType -> String)
-                      -> ShellType
-                      -> IO ()
+buildShellPrompt :: [GenericSegment] -> SegmentSymbol -> SegmentSymbol -> ShellType -> IO ()
 buildShellPrompt segmentMakers makeSeparator makePromptSymbol shellType =
   let segments = map (\f -> f shellType) segmentMakers
       separator = makeSeparator shellType
       promptSymbol = makePromptSymbol shellType
   in buildPrompt segments separator promptSymbol
 
-mkShellSegment :: ShellSegment String -> ShellType -> ShellSegment String
+mkShellSegment :: ShellSegment String -> GenericSegment
 mkShellSegment = mkFn (flip plain')
   where mkFn f seg shType = flip f shType <$> seg
 
-style :: (String -> ShellType -> String)
-            -> (ShellType -> ShellSegment String)
-            -> ShellType -> ShellSegment String
+style :: ShellStyler -> GenericSegment -> GenericSegment
 style f makeSegment = flip f >>= \g shellType -> g <$> makeSegment shellType
 
