@@ -43,6 +43,22 @@ extra-deps: [ text-1.2.2.1
             , split-0.2.3.1
             , directory-1.2.6.2
             , process-1.4.2.0
+            , shelly-1.6.8.1
+            , async-2.1.1
+            , enclosed-exceptions-1.0.2
+            , exceptions-0.8.3
+            , lifted-async-0.9.0
+            , lifted-base-0.2.3.8
+            , monad-control-1.0.1.0
+            , mtl-2.2.1
+            , system-fileio-0.3.16.3
+            , system-filepath-0.4.13.4
+            , transformers-base-0.4.4
+            , constraints-0.8
+            , stm-2.4.4.1
+            , transformers-compat-0.5.1.4
+            , unix-compat-0.4.3.1
+            , hashable-1.2.4.0
             ]
 
 # Override default flag values for local packages and extra-deps
