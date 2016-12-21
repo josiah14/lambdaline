@@ -17,6 +17,24 @@ import Control.Monad
 import Data.Maybe
 import System.Process
 import LambdaLine.Shells.ShellSegment
+import Control.Monad.Reader
+import Control.Monad.Trans.Reader
+
+-- gitStatus :: Reader IO (Bool) IO (Maybe Bool)
+
+-- gitStatus :: Reader String String
+-- gitStatus = do
+--   inGitRepo <- ask
+--   ... call the functions for the segments the user wants, and then put the results from those functions in a Map/Dictionary or a Record (or something)
+--   return { currentBranch: gitCurrentBranch inGitRepo
+--   , pushCommits: gitPushSYmbol inGitRepo
+--   , unstagedChanges: gitUnstagedSymbol inGitRepo
+--   }
+
+-- liftM (runReader gitStatus) inGitRepository
+
+-- type Config a = ReaderT Bool IO (Maybe a)
+
 
 gitCurrentBranch :: Segment f String => f String
 gitCurrentBranch =
@@ -46,7 +64,7 @@ gitUnstagedSymbol :: Segment f String => String -> f String
 gitUnstagedSymbol symbol = mkSegment $ hasUnstagedChanges >>= calculateStatusSymbol symbol
 
 inGitRepository :: IO Bool
-inGitRepository = return . isJust =<< parseProcessResponse (readProcessWithExitCode "git" ["rev-parse"] [])
+inGitRepository = fmap isJust (parseProcessResponse (readProcessWithExitCode "git" ["rev-parse"] []))
 
 -- private functions and types
 
@@ -72,7 +90,7 @@ getCurrentRepoStatus = do
 
 hasCommitsToPush :: IO (Maybe Bool)
 hasCommitsToPush = do
-  latestCommits <- liftM (fmap $ deleteNulls . splitOnNewLine) $ parseProcessResponse gitRemoteRefDiff
+  latestCommits <- fmap (deleteNulls . splitOnNewLine) <$> parseProcessResponse gitRemoteRefDiff
   case latestCommits
     of Nothing                                      -> return Nothing
        Just []                                      -> return $ Just False
@@ -82,10 +100,10 @@ hasCommitsToPush = do
   where gitRemoteRefDiff = readProcessWithExitCode "git" ["rev-parse", "@{u}", "HEAD"] []
 
 hasStagedChanges :: IO (Maybe Bool)
-hasStagedChanges = liftM (fmap isResponseNull) $ parseProcessResponse gitResponse
+hasStagedChanges = fmap isResponseNull <$> parseProcessResponse gitResponse
   where gitResponse = readProcessWithExitCode "git" ["diff-index","--cached","--ignore-submodules","HEAD"] []
 
 hasUnstagedChanges :: IO (Maybe Bool)
-hasUnstagedChanges = liftM (fmap isResponseNull) $ parseProcessResponse gitStatus
+hasUnstagedChanges = fmap isResponseNull <$> parseProcessResponse gitStatus
   where gitStatus = readProcessWithExitCode "git" ["diff-files","--ignore-submodules"] []
 

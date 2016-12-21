@@ -23,8 +23,8 @@ exec prompts = getPromptType >>= selectPrompt prompts
 
 selectPrompt :: [(String, IO())] -> String -> IO ()
 selectPrompt prompts promptType =
- let findPrompt testPromptName = promptType /= fst testPromptName
- in snd $ head $ dropWhile findPrompt prompts
+  let findPrompt testPromptName = promptType /= fst testPromptName
+  in snd $ head $ dropWhile findPrompt prompts
 
 getPromptType :: IO String
 getPromptType = head <$> getArgs
