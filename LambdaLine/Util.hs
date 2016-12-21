@@ -50,7 +50,7 @@ splitOnNewLine :: String -> [String]
 splitOnNewLine str = [ s | s <- SP.splitOn "\n" str, not . L.null $ s ]
 
 stdOutListAny :: IO (Maybe [String]) -> IO (Maybe Bool)
-stdOutListAny = liftM (fmap $ not . L.null)
+stdOutListAny = fmap (fmap $ not . L.null)
 
 trimString :: String -> String
 trimString = unpack . strip . pack

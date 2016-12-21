@@ -6,12 +6,11 @@ import Data.Text as T
 default (T.Text)
 
 main :: IO ()
-main = shelly $ verbosely $ do
-  run_ "ghc" [ "-O2"
-             , "Main.hs"
-             , "-odir"
-             , "./build-artifacts/objects"
-             , "-hidir"
-             , "./build-artifacts/interfaces"
-             ]
+main = shelly $ verbosely $ run_ "ghc" [ "-O2"
+                                       , "Main.hs"
+                                       , "-odir"
+                                       , "./build-artifacts/objects"
+                                       , "-hidir"
+                                       , "./build-artifacts/interfaces"
+                                       ]
 
